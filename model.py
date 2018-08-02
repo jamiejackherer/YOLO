@@ -3,13 +3,12 @@ from keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, MaxPoolin
 from keras.layers.merge import concatenate
 from keras.models import Model
 
-from config import image_h, image_w, grid_h, grid_w, num_classes, box, true_box_buffer
+from config import image_h, image_w, grid_h, grid_w, num_classes, box
 from utils import space_to_depth_x2
 
 
 def build_model():
     input_image = Input(shape=(image_h, image_w, 3))
-    true_boxes = Input(shape=(1, 1, 1, true_box_buffer, 4))
 
     # Layer 1
     x = Conv2D(32, (3, 3), strides=(1, 1), padding='same', name='conv_1', use_bias=False)(input_image)
@@ -137,11 +136,7 @@ def build_model():
     x = Conv2D(box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
     output = Reshape((grid_h, grid_w, box, 4 + 1 + num_classes))(x)
 
-    # small hack to allow true_boxes to be registered when Keras build the model
-    # for more information: https://github.com/fchollet/keras/issues/2790
-    output = Lambda(lambda args: args[0])([output, true_boxes])
-
-    model = Model([input_image, true_boxes], output)
+    model = Model(input_image, output)
     return model
 
 

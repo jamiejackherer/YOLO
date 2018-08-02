@@ -2,7 +2,6 @@ import multiprocessing
 
 import cv2 as cv
 import tensorflow as tf
-from pycocotools.coco import COCO
 from tensorflow.python.client import device_lib
 
 from config import train_annot_file, valid_annot_file
@@ -30,6 +29,7 @@ def space_to_depth_x2(x):
 
 
 def get_example_numbers():
+    from pycocotools.coco import COCO
     coco = COCO(train_annot_file)
     num_train_samples = len(coco.getImgIds())
     coco = COCO(valid_annot_file)
