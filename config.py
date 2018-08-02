@@ -1,6 +1,6 @@
-image_h, image_w = 416, 416
+image_h, image_w = 448, 448
 num_channels = 3
-grid_h, grid_w = 13, 13
+grid_h, grid_w = 14, 14
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
@@ -22,7 +22,11 @@ train_annot_file = 'data/annotations/instances_train2017.json'
 valid_annot_file = 'data/annotations/instances_val2017.json'
 
 verbose = 1
-batch_size = 32
+batch_size = 64
 num_epochs = 1000
 patience = 50
 best_model = 'model.11-0.6262.hdf5'
+
+lambda_coord = 5.0
+lambda_noobj = 0.5
+

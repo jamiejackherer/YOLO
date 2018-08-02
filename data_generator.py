@@ -31,19 +31,19 @@ def get_ground_truth(coco, imgId):
         height = 1.0 * height * image_h / img_height
         x_center = xmin + width / 2
         y_center = ymin + height / 2
-        grid_j = int(x_center / grid_w)
-        grid_i = int(y_center / grid_h)
-        bx = x_center / grid_w - grid_j
-        by = y_center / grid_h - grid_i
+        cell_x = int(x_center / grid_w)
+        cell_y = int(y_center / grid_h)
+        bx = x_center / grid_w - cell_x
+        by = y_center / grid_h - cell_y
         bw = width / grid_w
         bh = height / grid_h
-        anchor_id = get_next_box_id(gt[grid_i, grid_j])
-        gt[grid_i, grid_j, anchor_id, 0] = 1.0
-        gt[grid_i, grid_j, anchor_id, 1] = bx
-        gt[grid_i, grid_j, anchor_id, 2] = by
-        gt[grid_i, grid_j, anchor_id, 3] = bw
-        gt[grid_i, grid_j, anchor_id, 4] = bh
-        gt[grid_i, grid_j, anchor_id, 4 + category_id] = 1.0
+        anchor_id = get_next_box_id(gt[cell_y, cell_x])
+        gt[cell_y, cell_x, anchor_id, 0] = 1.0
+        gt[cell_y, cell_x, anchor_id, 1] = bx
+        gt[cell_y, cell_x, anchor_id, 2] = by
+        gt[cell_y, cell_x, anchor_id, 3] = bw
+        gt[cell_y, cell_x, anchor_id, 4] = bh
+        gt[cell_y, cell_x, anchor_id, 4 + category_id] = 1.0
     return gt
 
 
