@@ -1,13 +1,34 @@
 import os
-import random
-from random import shuffle
 
 import cv2 as cv
-import imutils
 import numpy as np
 from keras.utils import Sequence
+from pycocotools.coco import COCO
 
-from config import batch_size, train_image_folder, valid_image_folder, train_annot_file, valid_annot_file
+from config import batch_size, image_h, image_w, grid_h, grid_w, box, num_classes, num_channels
+from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file
+
+
+def get_ground_truth(coco, imgId):
+    gt = np.zeros((grid_h, grid_w, box, 4 + 1 + num_classes), dtype=np.float32)
+    img = coco.loadImgs(ids=[imgId])[0]
+    img_height = img['height']
+    img_width = img['width']
+    annIds = coco.getAnnIds(imgIds=[imgId])
+    annos = coco.loadAnns(ids=annIds)
+    for anno in annos:
+        category_id = anno['category_id']
+        xmin, ymin, width, height = anno['bbox']
+        xmin = 1.0 * xmin * image_w / img_width
+        ymin = 1.0 * ymin * image_h / img_height
+        width = 1.0 * width * image_w / img_width
+        height = 1.0 * height * image_h / img_height
+        x_center = xmin + width / 2
+        y_center = ymin + height / 2
+
+
+
+    return gt
 
 
 class DataGenSequence(Sequence):
@@ -15,52 +36,42 @@ class DataGenSequence(Sequence):
         self.usage = usage
 
         if usage == 'train':
-            image_folder = train_image_folder
+            self.image_folder = train_image_folder
             annot_file = train_annot_file
         else:
-            image_folder = valid_image_folder
+            self.image_folder = valid_image_folder
             annot_file = valid_annot_file
 
-        with open(names_file, 'r') as f:
-            self.names = f.read().splitlines()
+        self.coco = COCO(annot_file)
+        self.imgIds = self.coco.getImgIds()
 
-        np.random.shuffle(self.names)
+        np.random.shuffle(self.imgIds)
 
     def __len__(self):
-        return int(np.ceil(len(self.names) / float(batch_size)))
+        return int(np.ceil(len(self.imgIds) / float(batch_size)))
 
     def __getitem__(self, idx):
         i = idx * batch_size
 
-        out_img_rows, out_img_cols = img_size * self.scale, img_size * self.scale
-
-        length = min(batch_size, (len(self.names) - i))
-        batch_x = np.empty((length, img_size, img_size, channel), dtype=np.float32)
-        batch_y = np.empty((length, out_img_rows, out_img_cols, channel), dtype=np.float32)
+        length = min(batch_size, (len(self.imgIds) - i))
+        batch_x = np.empty((length, image_h, image_w, num_channels), dtype=np.float32)
+        batch_y = np.empty((length, grid_h, grid_w, box, 4 + 1 + num_classes), dtype=np.float32)
 
         for i_batch in range(length):
-            name = self.names[i + i_batch]
-            filename = os.path.join(image_folder, name)
-            # b: 0 <=b<=255, g: 0 <=g<=255, r: 0 <=r<=255.
+            imgId = self.imgIds[i + i_batch]
+            img = self.coco.loadImgs(ids=[imgId])[0]
+            file_name = img['file_name']
+            filename = os.path.join(self.image_folder, file_name)
             image_bgr = cv.imread(filename)
+            image_bgr = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
 
-            gt = random_crop(image_bgr, self.scale)
-
-            if np.random.random_sample() > 0.5:
-                gt = np.fliplr(gt)
-
-            angle = random.choice((0, 90, 180, 270))
-            gt = imutils.rotate_bound(gt, angle)
-
-            x = cv.resize(gt, (img_size, img_size), cv.INTER_CUBIC)
-
-            batch_x[i_batch, :, :] = preprocess_input(x)
-            batch_y[i_batch, :, :] = gt
+            batch_x[i_batch, :, :] = image_bgr
+            batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
 
         return batch_x, batch_y
 
     def on_epoch_end(self):
-        np.random.shuffle(self.names)
+        np.random.shuffle(self.imgIds)
 
 
 def train_gen():
@@ -69,32 +80,3 @@ def train_gen():
 
 def valid_gen():
     return DataGenSequence('valid')
-
-
-def split_data():
-    names = [f for f in os.listdir(image_folder) if f.lower().endswith('.jpg')]
-
-    num_samples = len(names)  # 1341430
-    print('num_samples: ' + str(num_samples))
-
-    num_train_samples = int(num_samples * 0.992)
-    print('num_train_samples: ' + str(num_train_samples))
-    num_valid_samples = num_samples - num_train_samples
-    print('num_valid_samples: ' + str(num_valid_samples))
-    valid_names = random.sample(names, num_valid_samples)
-    train_names = [n for n in names if n not in valid_names]
-    shuffle(valid_names)
-    shuffle(train_names)
-
-    # with open('names.txt', 'w') as file:
-    #     file.write('\n'.join(names))
-
-    with open('valid_names.txt', 'w') as file:
-        file.write('\n'.join(valid_names))
-
-    with open('train_names.txt', 'w') as file:
-        file.write('\n'.join(train_names))
-
-
-if __name__ == '__main__':
-    split_data()

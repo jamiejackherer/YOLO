@@ -7,6 +7,10 @@ from tensorflow.python.client import device_lib
 from config import train_annot_file, valid_annot_file
 
 
+def custom_loss(y_true, y_pred):
+    return 0.0
+
+
 # getting the number of GPUs
 def get_available_gpus():
     local_device_protos = device_lib.list_local_devices()
