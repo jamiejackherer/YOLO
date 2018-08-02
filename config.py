@@ -19,7 +19,7 @@ true_box_buffer = 50
 train_image_folder = 'data/train2017'
 valid_image_folder = 'data/val2017'
 train_annot_file = 'data/annotations/instances_train2017.json'
-valid_annot_file = 'data/annotations/instances_val2017.json.json'
+valid_annot_file = 'data/annotations/instances_val2017.json'
 
 verbose = 1
 batch_size = 32
