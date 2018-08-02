@@ -6,7 +6,7 @@ from keras.utils import Sequence
 from pycocotools.coco import COCO
 
 from config import batch_size, image_h, image_w, grid_h, grid_w, num_box, num_classes, num_channels
-from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file
+from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx
 
 
 def get_next_box_id(grid_cell):
@@ -43,7 +43,7 @@ def get_ground_truth(coco, imgId):
         gt[cell_y, cell_x, anchor_id, 2] = by
         gt[cell_y, cell_x, anchor_id, 3] = bw
         gt[cell_y, cell_x, anchor_id, 4] = bh
-        gt[cell_y, cell_x, anchor_id, 4 + category_id] = 1.0
+        gt[cell_y, cell_x, anchor_id, 5 + catId2idx[category_id]] = 1.0
     return gt
 
 
