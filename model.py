@@ -1,6 +1,8 @@
+import keras.backend as K
 from keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, MaxPooling2D, Lambda, Reshape
-from keras.models import Model
 from keras.layers.merge import concatenate
+from keras.models import Model
+
 from config import image_h, image_w, grid_h, grid_w, num_classes, box, true_box_buffer
 from utils import space_to_depth_x2
 
@@ -143,3 +145,9 @@ def build_model():
     return model
 
 
+if __name__ == '__main__':
+    m = build_model()
+    print(m.summary())
+    # from keras.utils import plot_model
+    # plot_model(m, to_file='model.svg', show_layer_names=True, show_shapes=True)
+    K.clear_session()

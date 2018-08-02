@@ -12,10 +12,8 @@ if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--pretrained", help="path to save pretrained model files")
-    ap.add_argument("-s", "--scale", help="scale")
     args = vars(ap.parse_args())
     pretrained_path = args["pretrained"]
-    scale = int(args["scale"])
     checkpoint_models_path = 'models/'
 
     # Callbacks
@@ -50,9 +48,9 @@ if __name__ == '__main__':
 
     num_train_samples, num_valid_samples = get_example_numbers()
     # Start Fine-tuning
-    new_model.fit_generator(train_gen(scale=scale),
+    new_model.fit_generator(train_gen(),
                             steps_per_epoch=num_train_samples // batch_size,
-                            validation_data=valid_gen(scale=scale),
+                            validation_data=valid_gen(),
                             validation_steps=num_valid_samples // batch_size,
                             epochs=num_epochs,
                             verbose=1,

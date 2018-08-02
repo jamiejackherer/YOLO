@@ -13,10 +13,12 @@ CVPR2016 目标检测论文 [YOLO: Unified, Real-Time Object Detection](https://
 
 我使用了 MSCOCO 2017 数据集，请按照[说明](http://cocodataset.org/#download) 下载 train2017.zip, val2017.zip, annotations_trainval2017.zip 放入 data 目录。
 
+![image](https://github.com/foamliu/YOLO/raw/master/images/COCO_2017.png)
+
 ## 用法
 
 ### 数据预处理
-提取60,999个训练图像，并将它们分开（53,879个用于训练，7,120个用于验证）：
+提取123,287个训练图像，并将它们分开（53,879个用于训练，7,120个用于验证）：
 ```bash
 $ python pre-process.py
 ```
