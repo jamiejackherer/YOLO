@@ -2,7 +2,10 @@ import multiprocessing
 
 import cv2 as cv
 import tensorflow as tf
+from pycocotools.coco import COCO
 from tensorflow.python.client import device_lib
+
+from config import train_annot_file, valid_annot_file
 
 
 # getting the number of GPUs
@@ -27,4 +30,8 @@ def space_to_depth_x2(x):
 
 
 def get_example_numbers():
-    return 0, 0
+    coco = COCO(train_annot_file)
+    num_train_samples = len(coco.getImgIds())
+    coco = COCO(valid_annot_file)
+    num_valid_samples = len(coco.getImgIds())
+    return num_train_samples, num_valid_samples

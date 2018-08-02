@@ -16,11 +16,11 @@ num_classes = len(labels)
 box = 5
 true_box_buffer = 50
 
-train_data = 'data/train'
-valid_data = 'data/valid'
+train_image_folder = 'data/train2017'
+valid_image_folder = 'data/val2017'
+train_annot_file = 'data/annotations/instances_train2017.json'
+valid_annot_file = 'data/annotations/instances_val2017.json.json'
 
-num_train_samples = 53879
-num_valid_samples = 7120
 verbose = 1
 batch_size = 32
 num_epochs = 1000

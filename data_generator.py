@@ -7,7 +7,7 @@ import imutils
 import numpy as np
 from keras.utils import Sequence
 
-from config import batch_size
+from config import batch_size, train_image_folder, valid_image_folder, train_annot_file, valid_annot_file
 
 
 class DataGenSequence(Sequence):
@@ -15,9 +15,11 @@ class DataGenSequence(Sequence):
         self.usage = usage
 
         if usage == 'train':
-            names_file = 'train_names.txt'
+            image_folder = train_image_folder
+            annot_file = train_annot_file
         else:
-            names_file = 'valid_names.txt'
+            image_folder = valid_image_folder
+            annot_file = valid_annot_file
 
         with open(names_file, 'r') as f:
             self.names = f.read().splitlines()
