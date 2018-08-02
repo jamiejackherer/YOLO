@@ -1,6 +1,7 @@
 import multiprocessing
 
 import cv2 as cv
+import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 
@@ -19,3 +20,11 @@ def draw_str(dst, target, s):
     x, y = target
     cv.putText(dst, s, (x + 1, y + 1), cv.FONT_HERSHEY_PLAIN, 0.8, (0, 0, 0), thickness=2, lineType=cv.LINE_AA)
     cv.putText(dst, s, (x, y), cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), lineType=cv.LINE_AA)
+
+
+def space_to_depth_x2(x):
+    return tf.space_to_depth(x, block_size=2)
+
+
+def get_example_numbers():
+    return 0, 0
