@@ -1,12 +1,14 @@
 import argparse
 
 import keras
+import tensorflow as tf
 from keras.callbacks import ModelCheckpoint, EarlyStopping, ReduceLROnPlateau
+from keras.utils import multi_gpu_model
 
 from config import patience, num_epochs, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
-from utils import get_example_numbers
+from utils import get_example_numbers, get_available_gpus
 
 if __name__ == '__main__':
     # Parse arguments
@@ -34,9 +36,20 @@ if __name__ == '__main__':
             self.model_to_save.save(fmt % (epoch, logs['val_loss']))
 
 
-    new_model = build_model()
-    if pretrained_path is not None:
-        new_model.load_weights(pretrained_path, by_name=True)
+    num_gpu = len(get_available_gpus())
+    if num_gpu >= 2:
+        with tf.device("/cpu:0"):
+            model = build_model()
+            if pretrained_path is not None:
+                model.load_weights(pretrained_path, by_name=True)
+
+        new_model = multi_gpu_model(model, gpus=num_gpu)
+        # rewrite the callback: saving through the original model and not the multi-gpu model.
+        model_checkpoint = MyCbk(model)
+    else:
+        new_model = build_model()
+        if pretrained_path is not None:
+            new_model.load_weights(pretrained_path, by_name=True)
 
     adam = keras.optimizers.Adam(lr=1e-4, epsilon=1e-8, decay=1e-6)
     new_model.compile(optimizer=adam, loss='mean_absolute_error')
