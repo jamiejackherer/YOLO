@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 
 import cv2 as cv
 import keras.backend as K
@@ -8,7 +9,7 @@ from tensorflow.python.client import device_lib
 from config import train_annot_file, valid_annot_file, lambda_coord
 
 
-def custom_loss(y_true, y_pred):
+def yolo_loss(y_true, y_pred):
     exists = c = y_true[:, :, :, 0]
     c_hat = y_pred[:, :, :, 0]
     x = y_true[:, :, :, 1]
@@ -27,6 +28,11 @@ def custom_loss(y_true, y_pred):
     loss_class = K.sum(K.square(cls - cls_hat))
     total_loss = lambda_coord * (loss_xy + loss_wh) + loss_conf + loss_class
     return total_loss
+
+
+def ensure_folder(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
 
 # getting the number of GPUs

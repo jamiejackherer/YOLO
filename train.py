@@ -8,7 +8,7 @@ from keras.utils import multi_gpu_model
 from config import patience, num_epochs, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
-from utils import get_example_numbers, get_available_gpus
+from utils import get_example_numbers, get_available_gpus, ensure_folder, yolo_loss
 
 if __name__ == '__main__':
     # Parse arguments
@@ -51,14 +51,14 @@ if __name__ == '__main__':
         if pretrained_path is not None:
             new_model.load_weights(pretrained_path, by_name=True)
 
-    adam = keras.optimizers.Adam(lr=1e-4, epsilon=1e-8, decay=1e-6)
-    new_model.compile(optimizer=adam, loss='mean_absolute_error')
+    new_model.compile(optimizer='adam', loss=yolo_loss)
 
     print(new_model.summary())
 
     # Final callbacks
     callbacks = [tensor_board, model_checkpoint, early_stop, reduce_lr]
 
+    ensure_folder('models')
     num_train_samples, num_valid_samples = get_example_numbers()
     # Start Fine-tuning
     new_model.fit_generator(train_gen(),
