@@ -1,6 +1,7 @@
 image_h, image_w = 448, 448
 num_channels = 3
 grid_h, grid_w = 32, 32
+num_grid = image_h // grid_h
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
@@ -13,7 +14,7 @@ labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 
           'hair drier', 'toothbrush']
 num_classes = len(labels)
 
-box = 5
+num_box = 5
 true_box_buffer = 50
 
 train_image_folder = 'data/train2017'

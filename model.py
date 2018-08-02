@@ -3,7 +3,7 @@ from keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, MaxPoolin
 from keras.layers.merge import concatenate
 from keras.models import Model
 
-from config import image_h, image_w, grid_h, grid_w, num_classes, box
+from config import image_h, image_w, grid_h, grid_w, num_classes, num_box, num_grid
 from utils import space_to_depth_x2
 
 
@@ -133,8 +133,8 @@ def build_model():
     x = LeakyReLU(alpha=0.1)(x)
 
     # Layer 23
-    x = Conv2D(box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
-    output = Reshape((grid_h, grid_w, box, 4 + 1 + num_classes))(x)
+    x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
+    output = Reshape((num_grid, num_grid, num_box, 4 + 1 + num_classes))(x)
 
     model = Model(input_image, output)
     return model
