@@ -11,8 +11,9 @@ from config import train_image_folder, valid_image_folder, train_annot_file, val
 
 def get_next_box_id(grid_cell):
     for i in range(num_box):
-        if np.allclose(grid_cell[i][0], 0):
+        if grid_cell[i][0] == 0.0:
             return i
+    return 0
 
 
 def get_ground_truth(coco, imgId):
