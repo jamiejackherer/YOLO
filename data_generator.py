@@ -17,7 +17,7 @@ def get_next_box_id(grid_cell):
 
 
 def get_ground_truth(coco, imgId):
-    gt = np.zeros((grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
+    gt = np.zeros((num_grid, num_grid, num_box, 4 + 1 + num_classes), dtype=np.float32)
     img = coco.loadImgs(ids=[imgId])[0]
     img_height = img['height']
     img_width = img['width']
