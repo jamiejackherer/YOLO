@@ -1,6 +1,6 @@
 image_h, image_w = 448, 448
 num_channels = 3
-grid_h, grid_w = 14, 14
+grid_h, grid_w = 32, 32
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
