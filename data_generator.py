@@ -5,7 +5,7 @@ import numpy as np
 from keras.utils import Sequence
 from pycocotools.coco import COCO
 
-from config import batch_size, image_h, image_w, grid_h, grid_w, num_box, num_classes, num_channels
+from config import batch_size, image_h, image_w, grid_h, grid_w, num_box, num_classes, num_channels, num_grid
 from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx
 
 
@@ -72,7 +72,7 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.imgIds) - i))
         batch_x = np.empty((length, image_h, image_w, num_channels), dtype=np.float32)
-        batch_y = np.empty((length, grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
+        batch_y = np.empty((length, num_grid, num_grid, num_box, 4 + 1 + num_classes), dtype=np.float32)
 
         for i_batch in range(length):
             imgId = self.imgIds[i + i_batch]
