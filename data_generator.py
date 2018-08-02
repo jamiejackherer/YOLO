@@ -9,6 +9,12 @@ from config import batch_size, image_h, image_w, grid_h, grid_w, box, num_classe
 from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file
 
 
+def get_next_box_id(grid_cell):
+    for i in range(box):
+        if np.allclose(grid_cell[i][0], 0):
+            return i
+
+
 def get_ground_truth(coco, imgId):
     gt = np.zeros((grid_h, grid_w, box, 4 + 1 + num_classes), dtype=np.float32)
     img = coco.loadImgs(ids=[imgId])[0]
@@ -25,9 +31,19 @@ def get_ground_truth(coco, imgId):
         height = 1.0 * height * image_h / img_height
         x_center = xmin + width / 2
         y_center = ymin + height / 2
-
-
-
+        grid_j = int(x_center / grid_w)
+        grid_i = int(y_center / grid_h)
+        bx = x_center / grid_w - grid_j
+        by = y_center / grid_h - grid_i
+        bw = width / grid_w
+        bh = height / grid_h
+        anchor_id = get_next_box_id(gt[grid_i, grid_j])
+        gt[grid_i, grid_j, anchor_id, 0] = 1.0
+        gt[grid_i, grid_j, anchor_id, 1] = bx
+        gt[grid_i, grid_j, anchor_id, 2] = by
+        gt[grid_i, grid_j, anchor_id, 3] = bw
+        gt[grid_i, grid_j, anchor_id, 4] = bh
+        gt[grid_i, grid_j, anchor_id, 4 + category_id] = 1.0
     return gt
 
 
