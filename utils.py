@@ -105,9 +105,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     print('filtering_mask.shape: ' + str(filtering_mask.shape))
 
     # Step 4: Apply the mask to scores, boxes and classes
-    scores = box_class_scores * filtering_mask
-    boxes = boxes * filtering_mask
-    classes = box_classes * filtering_mask
+    scores = box_class_scores[filtering_mask]
+    boxes = boxes[filtering_mask]
+    classes = box_classes[filtering_mask]
 
     return scores, boxes, classes
 

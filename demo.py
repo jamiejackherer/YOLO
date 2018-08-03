@@ -36,16 +36,16 @@ if __name__ == '__main__':
         preds = model.predict(image_input)  # [1, 14, 14, 5, 85]
         # print('preds: ' + str(preds))
         box_confidence = sigmoid(preds[0, :, :, :, 0])
-        print('box_confidence: ' + str(box_confidence))
+        # print('box_confidence: ' + str(box_confidence))
         box_confidence = np.expand_dims(box_confidence, axis=-1)
         box_xy = sigmoid(preds[0, :, :, :, 1:3])
         box_xy = update_box_xy(box_xy)
-        print('box_xy: ' + str(box_xy))
+        # print('box_xy: ' + str(box_xy))
         box_wh = preds[0, :, :, :, 3:5] * grid_size
-        print('box_wh: ' + str(box_wh))
+        # print('box_wh: ' + str(box_wh))
         box_class_probs = preds[0, :, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
-        print('boxes after to_corners: ' + str(boxes))
+        # print('boxes after to_corners: ' + str(boxes))
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs)
         boxes = scale_boxes(boxes, image_shape)
         boxes = np.reshape(boxes, (-1, 4))
