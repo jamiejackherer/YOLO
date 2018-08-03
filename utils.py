@@ -2,15 +2,18 @@ import multiprocessing
 import os
 
 import cv2 as cv
+import keras
 import keras.backend as K
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import train_annot_file, valid_annot_file, lambda_coord
+from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noobj
 
 
 def yolo_loss(y_true, y_pred):
-    exists = conf = y_true[..., 0]
+    conf = y_true[..., 0]
+    obj_ij_mask = conf
+    noobj_ij_mask = 1.0 - obj_ij_mask
     conf_hat = K.sigmoid(y_pred[..., 0])
     xy = y_true[..., 1:3]
     xy_hat = K.sigmoid(y_pred[..., 1:3])
@@ -18,10 +21,11 @@ def yolo_loss(y_true, y_pred):
     wh_hat = y_pred[..., 3:5]
     cls = y_true[..., 5:]
     cls_hat = y_pred[..., 5:]
-    loss_xy = K.sum(exists * K.square(xy - xy_hat))
-    loss_wh = K.sum(exists * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
-    loss_conf = K.sum(K.square(conf - conf_hat))
-    loss_class = K.sum(K.square(cls - cls_hat))
+    loss_xy = K.sum(obj_ij_mask * K.square(xy - xy_hat))
+    loss_wh = K.sum(obj_ij_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
+    loss_conf = K.sum(obj_ij_mask * K.square(conf - conf_hat))
+    loss_conf += lambda_noobj * K.sum(noobj_ij_mask * K.square(conf - conf_hat))
+    loss_class = keras.losses.categorical_crossentropy(cls, cls_hat)
     total_loss = lambda_coord * (loss_xy + loss_wh) + loss_conf + loss_class
     return total_loss
 

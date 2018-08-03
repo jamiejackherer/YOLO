@@ -31,4 +31,4 @@ patience = 50
 best_model = 'model.11-0.6262.hdf5'
 
 lambda_coord = 5.0
-lambda_noobj = 0.5
+lambda_noobj = 1.0
