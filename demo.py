@@ -44,8 +44,7 @@ if __name__ == '__main__':
         boxes = np.reshape(boxes, (-1, 4))
         scores = np.reshape(scores, (-1))
         nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
-        print(nms_indices)
-        print(K.eval(nms_indices))
+        nms_indices = K.eval(nms_indices)
         scores = scores[nms_indices]
         boxes = boxes[nms_indices]
         classes = classes[nms_indices]
