@@ -7,7 +7,7 @@ import keras.backend as K
 import numpy as np
 import tensorflow as tf
 
-from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model
+from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes
 
@@ -51,8 +51,11 @@ if __name__ == '__main__':
         # print('classes.shape: ' + str(classes.shape))
         classes = classes[nms_indices]
 
-        for box in boxes:
+        for i, cls in enumerate(classes):
+            box = boxes[i]
+            print(labels[cls])
             y_min, x_min, y_max, x_max = box
+            print('y_min={}, x_min={}, y_max={}, x_max={}'.format(y_min, x_min, y_max, x_max))
             cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))
 
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)
