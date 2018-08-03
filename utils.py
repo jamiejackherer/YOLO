@@ -11,10 +11,10 @@ from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noob
 
 
 def yolo_loss(y_true, y_pred):
-    conf = y_true[..., 0]
+    conf = K.expand_dims(y_true[..., 0], axis=-1)
     obj_ij_mask = conf
     noobj_ij_mask = 1.0 - obj_ij_mask
-    conf_hat = K.sigmoid(y_pred[..., 0])
+    conf_hat = K.expand_dims(K.sigmoid(y_pred[..., 0]), axis=-1)
     xy = y_true[..., 1:3]
     xy_hat = K.sigmoid(y_pred[..., 1:3])
     wh = y_true[..., 3:5]
