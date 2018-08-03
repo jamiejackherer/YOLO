@@ -121,7 +121,7 @@ def yolo_boxes_to_corners(box_xy, box_wh):
         box_mins[..., 0:1],  # x_min
         box_maxes[..., 1:2],  # y_max
         box_maxes[..., 0:1]  # x_max
-    ])
+    ], axis=-1)
 
 
 def scale_boxes(boxes, image_shape):
