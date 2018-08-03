@@ -93,9 +93,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     print('box_scores.shape: ' + str(box_scores.shape))
 
     # Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
-    box_classes = K.argmax(box_scores, axis=-1)
+    box_classes = np.argmax(box_scores, axis=-1)
     print('box_classes.shape: ' + str(box_classes.shape))
-    box_class_scores = K.max(box_scores, axis=-1)
+    box_class_scores = np.max(box_scores, axis=-1)
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
 
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
@@ -104,9 +104,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     print('filtering_mask.shape: ' + str(filtering_mask.shape))
 
     # Step 4: Apply the mask to scores, boxes and classes
-    scores = tf.boolean_mask(box_class_scores, filtering_mask)
-    boxes = tf.boolean_mask(boxes, filtering_mask)
-    classes = tf.boolean_mask(box_classes, filtering_mask)
+    scores = box_class_scores * filtering_mask
+    boxes = boxes * filtering_mask
+    classes = box_classes * filtering_mask
 
     return scores, boxes, classes
 
