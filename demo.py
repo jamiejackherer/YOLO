@@ -47,6 +47,7 @@ if __name__ == '__main__':
         nms_indices = K.eval(nms_indices)
         scores = scores[nms_indices]
         boxes = boxes[nms_indices]
+        print('classes.shape: ' + str(classes.shape))
         classes = classes[nms_indices]
 
         for box in boxes:
