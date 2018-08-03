@@ -34,6 +34,7 @@ if __name__ == '__main__':
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 5, 85]
         box_confidence = preds[0, :, :, :, 0]
+        box_confidence = np.expand_dims(box_confidence, axis=-1)
         box_xy = preds[0, :, :, :, 1:3]
         box_wh = preds[0, :, :, :, 3:5]
         box_class_probs = preds[0, :, :, :, 5:]
