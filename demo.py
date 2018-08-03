@@ -9,7 +9,7 @@ import tensorflow as tf
 
 from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels
 from model import build_model
-from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes
+from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes, sigmoid
 
 if __name__ == '__main__':
     model = build_model()
@@ -33,9 +33,9 @@ if __name__ == '__main__':
         image_input = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 5, 85]
-        box_confidence = preds[0, :, :, :, 0]
+        box_confidence = sigmoid(preds[0, :, :, :, 0])
         box_confidence = np.expand_dims(box_confidence, axis=-1)
-        box_xy = preds[0, :, :, :, 1:3]
+        box_xy = sigmoid(preds[0, :, :, :, 1:3])
         box_wh = preds[0, :, :, :, 3:5]
         box_class_probs = preds[0, :, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)

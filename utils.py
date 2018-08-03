@@ -133,3 +133,7 @@ def scale_boxes(boxes, image_shape):
     image_dims = np.reshape(image_dims, [1, 4])
     boxes = boxes * image_dims
     return boxes
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
