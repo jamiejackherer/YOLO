@@ -10,21 +10,17 @@ from config import train_annot_file, valid_annot_file, lambda_coord
 
 
 def yolo_loss(y_true, y_pred):
-    exists = c = y_true[:, :, :, 0]
-    c_hat = y_pred[:, :, :, 0]
-    x = y_true[:, :, :, 1]
-    x_hat = y_pred[:, :, :, 1]
-    y = y_true[:, :, :, 2]
-    y_hat = y_pred[:, :, :, 2]
-    w = y_true[:, :, :, 3]
-    w_hat = y_pred[:, :, :, 3]
-    h = y_true[:, :, :, 4]
-    h_hat = y_pred[:, :, :, 4]
-    cls = y_true[:, :, :, 5:]
-    cls_hat = y_pred[:, :, :, 5:]
-    loss_xy = K.sum(exists * (K.square(x - x_hat) + K.square(y - y_hat)))
-    loss_wh = K.sum(exists * K.square(K.sqrt(w) - K.sqrt(w_hat) + K.square(K.sqrt(h) - K.sqrt(h_hat))))
-    loss_conf = K.sum(K.square(c - c_hat))
+    exists = conf = y_true[..., 0]
+    conf_hat = K.sigmoid(y_pred[..., 0])
+    xy = y_true[..., 1:3]
+    xy_hat = K.sigmoid(y_pred[..., 1:3])
+    wh = y_true[..., 3:5]
+    wh_hat = y_pred[..., 3:5]
+    cls = y_true[..., 5:]
+    cls_hat = y_pred[..., 5:]
+    loss_xy = K.sum(exists * K.square(xy - xy_hat))
+    loss_wh = K.sum(exists * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
+    loss_conf = K.sum(K.square(conf - conf_hat))
     loss_class = K.sum(K.square(cls - cls_hat))
     total_loss = lambda_coord * (loss_xy + loss_wh) + loss_conf + loss_class
     return total_loss
