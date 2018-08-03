@@ -41,6 +41,8 @@ if __name__ == '__main__':
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs)
         boxes = scale_boxes(boxes, image_shape)
+        boxes = np.reshape(boxes, (-1, 4))
+        scores = np.reshape(scores, (-1))
         nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
         scores = scores[nms_indices]
         boxes = boxes[nms_indices]
