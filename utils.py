@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noobj
+from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noobj, num_grid, num_box, grid_size
 
 
 def yolo_loss(y_true, y_pred):
@@ -137,3 +137,18 @@ def scale_boxes(boxes, image_shape):
 
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x))
+
+
+def update_box_xy(box_xy):
+    result = box_xy.copy()
+    # shape = 14, 14, 5, 2
+    for cell_y in range(num_grid):
+        for cell_x in range(num_grid):
+            for j in range(num_box):
+                bx = box_xy[cell_y, cell_x, j, 0]
+                by = box_xy[cell_y, cell_x, j, 1]
+                bx = (cell_x + bx) * grid_size
+                by = (cell_y + by) * grid_size
+                result[cell_y, cell_x, j, 0] = bx
+                result[cell_y, cell_x, j, 1] = by
+    return result

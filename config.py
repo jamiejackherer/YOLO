@@ -1,6 +1,7 @@
 image_h, image_w = 448, 448
 num_channels = 3
 grid_h, grid_w = 32, 32
+grid_size = 32
 num_grid = image_h // grid_h
 num_box = 5
 
