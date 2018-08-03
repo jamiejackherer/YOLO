@@ -2,7 +2,6 @@ import multiprocessing
 import os
 
 import cv2 as cv
-import keras
 import keras.backend as K
 import tensorflow as tf
 from tensorflow.python.client import device_lib
@@ -25,7 +24,7 @@ def yolo_loss(y_true, y_pred):
     loss_wh = K.sum(obj_ij_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
     loss_conf = K.sum(obj_ij_mask * K.square(conf - conf_hat))
     loss_conf += lambda_noobj * K.sum(noobj_ij_mask * K.square(conf - conf_hat))
-    loss_class = keras.losses.categorical_crossentropy(cls, cls_hat)
+    loss_class = K.sum(obj_ij_mask * K.square(cls - cls_hat))
     total_loss = lambda_coord * (loss_xy + loss_wh) + loss_conf + loss_class
     return total_loss
 
