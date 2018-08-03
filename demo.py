@@ -41,9 +41,9 @@ if __name__ == '__main__':
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs)
         boxes = scale_boxes(boxes, image_shape)
         nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
-        scores = K.eval(K.gather(scores, nms_indices))
-        boxes = K.eval(K.gather(boxes, nms_indices))
-        classes = K.eval(K.gather(classes, nms_indices))
+        scores = scores[nms_indices]
+        boxes = boxes[nms_indices]
+        classes = classes[nms_indices]
 
         for box in boxes:
             y_min, x_min, y_max, x_max = box

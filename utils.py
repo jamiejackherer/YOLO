@@ -3,6 +3,7 @@ import os
 
 import cv2 as cv
 import keras.backend as K
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
@@ -111,7 +112,7 @@ def yolo_boxes_to_corners(box_xy, box_wh):
     box_mins = box_xy - (box_wh / 2.)
     box_maxes = box_xy + (box_wh / 2.)
 
-    return K.concatenate([
+    return np.concatenate([
         box_mins[..., 1:2],  # y_min
         box_mins[..., 0:1],  # x_min
         box_maxes[..., 1:2],  # y_max
@@ -123,7 +124,7 @@ def scale_boxes(boxes, image_shape):
     """ Scales the predicted boxes in order to be drawable on the image"""
     height = image_shape[0]
     width = image_shape[1]
-    image_dims = K.stack([height, width, height, width])
-    image_dims = K.reshape(image_dims, [1, 4])
+    image_dims = np.stack([height, width, height, width])
+    image_dims = np.reshape(image_dims, [1, 4])
     boxes = boxes * image_dims
     return boxes
