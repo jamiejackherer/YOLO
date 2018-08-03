@@ -136,4 +136,4 @@ def scale_boxes(boxes, image_shape):
 
 
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+    return 1.0 / (1.0 + np.exp(-x))
