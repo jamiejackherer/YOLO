@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
         for box in boxes:
             y_min, x_min, y_max, x_max = box
-            cv.rectangle(image_bgr, (x_min, y_min), (x_max, y_max), (255, 0, 0))
+            cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))
 
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)
 
