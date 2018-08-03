@@ -94,6 +94,7 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 
     # Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
     box_classes = np.argmax(box_scores, axis=-1)
+    box_classes = np.expand_dims(box_classes, axis=-1)
     print('box_classes.shape: ' + str(box_classes.shape))
     box_class_scores = np.max(box_scores, axis=-1, keepdims=True)
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
