@@ -106,7 +106,7 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 
     # Step 4: Apply the mask to scores, boxes and classes
     scores = box_class_scores[filtering_mask]
-    boxes = boxes[filtering_mask]
+    boxes = boxes[np.repeat(filtering_mask, 4, axis=3)]
     classes = box_classes[filtering_mask]
 
     return scores, boxes, classes
