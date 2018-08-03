@@ -33,7 +33,7 @@ if __name__ == '__main__':
         image_input = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 5, 85]
-        print('preds: ' + str(preds))
+        # print('preds: ' + str(preds))
         box_confidence = sigmoid(preds[0, :, :, :, 0])
         print('box_confidence: ' + str(box_confidence))
         box_confidence = np.expand_dims(box_confidence, axis=-1)
@@ -51,6 +51,7 @@ if __name__ == '__main__':
         classes = np.reshape(classes, (-1))
         nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
         nms_indices = K.eval(nms_indices)
+        print('nms_indices: ' + str(nms_indices))
         scores = scores[nms_indices]
         boxes = boxes[nms_indices]
         # print('classes.shape: ' + str(classes.shape))
