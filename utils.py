@@ -10,21 +10,26 @@ from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noob
 
 
 def yolo_loss(y_true, y_pred):
-    conf = K.expand_dims(y_true[..., 0], axis=-1)
-    obj_ij_mask = conf
-    noobj_ij_mask = 1.0 - obj_ij_mask
+    conf = y_true[..., 0]   # [None, 14, 14, 5]
+    obj_i_mask = tf.to_float(tf.reduce_sum(conf, axis=-1) >= 1.0)   # [None, 14, 14]
+    obj_i_mask = K.expand_dims(obj_i_mask, axis=-1)     # [None, 14, 14, 1]
+    obj_i_mask = K.repeat_elements(obj_i_mask, 5, -1)   # [None, 14, 14, 5]
+    obj_i_mask = K.expand_dims(obj_i_mask, axis=-1)     # [None, 14, 14, 5, 1]
+    conf = K.expand_dims(conf, axis=-1)     # [None, 14, 14, 5, 1]
+    obj_ij_mask = conf                      # [None, 14, 14, 5, 1]
+    noobj_ij_mask = 1.0 - obj_ij_mask       # [None, 14, 14, 5, 1]
     conf_hat = K.expand_dims(K.sigmoid(y_pred[..., 0]), axis=-1)
-    xy = y_true[..., 1:3]
-    xy_hat = K.sigmoid(y_pred[..., 1:3])
-    wh = y_true[..., 3:5]
-    wh_hat = y_pred[..., 3:5]
-    cls = y_true[..., 5:]
-    cls_hat = y_pred[..., 5:]
+    xy = y_true[..., 1:3]                   # [None, 14, 14, 5, 2]
+    xy_hat = K.sigmoid(y_pred[..., 1:3])    # [None, 14, 14, 5, 2]
+    wh = y_true[..., 3:5]                   # [None, 14, 14, 5, 2]
+    wh_hat = y_pred[..., 3:5]               # [None, 14, 14, 5, 2]
+    cls = y_true[..., 5:]                   # [None, 14, 14, 5, 80]
+    cls_hat = y_pred[..., 5:]               # [None, 14, 14, 5, 80]
     loss_xy = K.sum(obj_ij_mask * K.square(xy - xy_hat))
     loss_wh = K.sum(obj_ij_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
     loss_conf = K.sum(obj_ij_mask * K.square(conf - conf_hat))
     loss_conf += lambda_noobj * K.sum(noobj_ij_mask * K.square(conf - conf_hat))
-    loss_class = K.sum(obj_ij_mask * K.square(cls - cls_hat))
+    loss_class = K.sum(obj_i_mask * K.square(cls - cls_hat))
     total_loss = lambda_coord * (loss_xy + loss_wh) + loss_conf + loss_class
     return total_loss
 
