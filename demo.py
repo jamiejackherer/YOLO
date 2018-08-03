@@ -30,6 +30,7 @@ if __name__ == '__main__':
         print('Start processing image: {}'.format(filename))
         image_bgr = cv.imread(filename)
         image_shape = image_bgr.shape
+        print('image_shape: ' + str(image_shape))
         image_input = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 5, 85]
@@ -44,9 +45,11 @@ if __name__ == '__main__':
         print('box_wh: ' + str(box_wh))
         box_class_probs = preds[0, :, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
+        print('boxes after to_corners: ' + str(boxes))
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs)
         boxes = scale_boxes(boxes, image_shape)
         boxes = np.reshape(boxes, (-1, 4))
+        print('boxes after scale: ' + str(boxes))
         scores = np.reshape(scores, (-1))
         classes = np.reshape(classes, (-1))
         nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
