@@ -1,13 +1,13 @@
 # import the necessary packages
 import os
-import random
 
 import cv2 as cv
 import keras.backend as K
 import numpy as np
 import tensorflow as tf
 
-from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels, grid_size, score_threshold
+from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels, grid_size, \
+    score_threshold
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes, sigmoid, update_box_xy
 
@@ -20,7 +20,8 @@ if __name__ == '__main__':
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
     num_samples = 1
-    samples = random.sample(test_images, num_samples)
+    #samples = random.sample(test_images, num_samples)
+    samples = [test_images[0]]
 
     ensure_folder('images')
 
@@ -60,8 +61,8 @@ if __name__ == '__main__':
         # print('classes.shape: ' + str(classes.shape))
         classes = classes[nms_indices]
 
-        for i, cls in enumerate(classes):
-            box = boxes[i]
+        for j, cls in enumerate(classes):
+            box = boxes[j]
             print(labels[cls])
             y_min, x_min, y_max, x_max = box
             print('y_min={}, x_min={}, y_max={}, x_max={}'.format(y_min, x_min, y_max, x_max))
