@@ -7,7 +7,7 @@ import keras.backend as K
 import numpy as np
 import tensorflow as tf
 
-from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels, grid_size
+from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels, grid_size, score_threshold
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes, sigmoid, update_box_xy
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         box_class_probs = preds[0, :, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
         # print('boxes after to_corners: ' + str(boxes))
-        scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs)
+        scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs, score_threshold)
         boxes = scale_boxes(boxes, image_shape)
         boxes = np.reshape(boxes, (-1, 4))
         print('boxes after scale: ' + str(boxes))
