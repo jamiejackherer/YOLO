@@ -3,7 +3,7 @@ from keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, MaxPoolin
 from keras.layers.merge import concatenate
 from keras.models import Model
 
-from config import image_h, image_w, grid_h, grid_w, num_classes, num_box, num_grid
+from config import image_h, image_w, num_classes, num_box, num_grid
 from utils import space_to_depth_x2
 
 
