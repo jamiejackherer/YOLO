@@ -1,4 +1,4 @@
-from keras.applications.vgg16 import VGG16
+import keras.backend as K
 from keras.layers import BatchNormalization, LeakyReLU, MaxPooling2D, Lambda, Reshape, Input
 from keras.layers import Conv2D
 from keras.layers.merge import concatenate
@@ -10,11 +10,8 @@ from utils import space_to_depth_x2
 
 def build_model():
     input_image = Input(shape=(image_h, image_w, 3))
-    base_model = VGG16(input_shape=(image_h, image_w, 3), include_top=False, weights='imagenet',
-                       pooling=None)
     # Layer 1	    input_image = base_model.input
     x = Conv2D(32, (3, 3), strides=(1, 1), padding='same', name='conv_1', use_bias=False)(input_image)
-    x = base_model.layers[-1].output
     x = BatchNormalization(name='norm_1')(x)
     x = LeakyReLU(alpha=0.1)(x)
     x = MaxPooling2D(pool_size=(2, 2))(x)
