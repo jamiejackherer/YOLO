@@ -134,7 +134,7 @@ def build_model():
 
     # Layer 23
     x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
-    output = Reshape((num_grid, num_grid, num_box, 4 + 1 + num_classes))(x)
+    output = Reshape((num_grid, num_grid, 4 + 1 + num_classes))(x)
 
     model = Model(input_image, output)
     return model
@@ -143,6 +143,7 @@ def build_model():
 if __name__ == '__main__':
     m = build_model()
     print(m.summary())
-    # from keras.utils import plot_model
-    # plot_model(m, to_file='model.svg', show_layer_names=True, show_shapes=True)
+    from keras.utils import plot_model
+
+    plot_model(m, to_file='model.svg', show_layer_names=True, show_shapes=True)
     K.clear_session()

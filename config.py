@@ -3,7 +3,7 @@ num_channels = 3
 grid_h, grid_w = 32, 32
 grid_size = 32
 num_grid = image_h // grid_h
-num_box = 5
+num_box = 1
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
@@ -32,8 +32,8 @@ patience = 50
 best_model = 'model.14-2474.5505.hdf5'
 
 lambda_coord = 5.0
-lambda_noobj = 1.0
+lambda_noobj = 0.5
 
 max_boxes = 10  # integer, maximum number of predicted boxes in an image
-iou_threshold = 0.3  # real value, "intersection over union" threshold used for NMS filtering
-score_threshold = 0.3  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
+iou_threshold = 0.5  # real value, "intersection over union" threshold used for NMS filtering
+score_threshold = 0.6  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box

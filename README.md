@@ -13,6 +13,10 @@ CVPR2016 目标检测论文 [YOLO: Unified, Real-Time Object Detection](https://
 
 我使用了 MSCOCO 2017 数据集，请按照[说明](http://cocodataset.org/#download) 下载 train2017.zip, val2017.zip, annotations_trainval2017.zip 放入 data 目录。
 
+```bash
+$ wget http://images.cocodataset.org/zips/train2017.zip && wget http://images.cocodataset.org/zips/val2017.zip && wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+```
+
 ![image](https://github.com/foamliu/YOLO/raw/master/images/COCO_2017.png)
 
 ## 用法

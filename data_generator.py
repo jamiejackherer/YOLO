@@ -5,19 +5,12 @@ import numpy as np
 from keras.utils import Sequence
 from pycocotools.coco import COCO
 
-from config import batch_size, image_h, image_w, grid_h, grid_w, num_box, num_classes, num_channels, num_grid
+from config import batch_size, image_h, image_w, grid_h, grid_w, num_classes, num_channels, num_grid
 from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx
 
 
-def get_next_box_id(grid_cell):
-    for i in range(num_box):
-        if grid_cell[i][0] == 0.0:
-            return i
-    return 0
-
-
 def get_ground_truth(coco, imgId):
-    gt = np.zeros((num_grid, num_grid, num_box, 4 + 1 + num_classes), dtype=np.float32)
+    gt = np.zeros((num_grid, num_grid, 4 + 1 + num_classes), dtype=np.float32)
     img = coco.loadImgs(ids=[imgId])[0]
     img_height = img['height']
     img_width = img['width']
@@ -38,13 +31,12 @@ def get_ground_truth(coco, imgId):
         by = y_center / grid_h - cell_y
         bw = width / grid_w
         bh = height / grid_h
-        anchor_id = get_next_box_id(gt[cell_y, cell_x])
-        gt[cell_y, cell_x, anchor_id, 0] = 1.0
-        gt[cell_y, cell_x, anchor_id, 1] = bx
-        gt[cell_y, cell_x, anchor_id, 2] = by
-        gt[cell_y, cell_x, anchor_id, 3] = bw
-        gt[cell_y, cell_x, anchor_id, 4] = bh
-        gt[cell_y, cell_x, anchor_id, 5 + catId2idx[category_id]] = 1.0
+        gt[cell_y, cell_x, 0] = 1.0
+        gt[cell_y, cell_x, 1] = bx
+        gt[cell_y, cell_x, 2] = by
+        gt[cell_y, cell_x, 3] = bw
+        gt[cell_y, cell_x, 4] = bh
+        gt[cell_y, cell_x, 5 + catId2idx[category_id]] = 1.0
     return gt
 
 
@@ -72,7 +64,7 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.imgIds) - i))
         batch_x = np.empty((length, image_h, image_w, num_channels), dtype=np.float32)
-        batch_y = np.empty((length, num_grid, num_grid, num_box, 4 + 1 + num_classes), dtype=np.float32)
+        batch_y = np.empty((length, num_grid, num_grid, 4 + 1 + num_classes), dtype=np.float32)
 
         for i_batch in range(length):
             imgId = self.imgIds[i + i_batch]
