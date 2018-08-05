@@ -11,7 +11,6 @@ def build_model():
                        pooling=None)
     input_image = base_model.input
     x = base_model.layers[-1].output
-    # Layer 23
     x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same')(x)
     output = Reshape((num_grid, num_grid, 4 + 1 + num_classes))(x)
 
