@@ -52,7 +52,7 @@ if __name__ == '__main__':
             new_model.load_weights(pretrained_path, by_name=True)
 
     adam = keras.optimizers.Adam(clipnorm=5.0)
-    new_model.compile(optimizer='adam', loss=yolo_loss)
+    new_model.compile(optimizer=adam, loss=yolo_loss)
 
     print(new_model.summary())
 
