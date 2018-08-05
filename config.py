@@ -26,7 +26,7 @@ train_annot_file = 'data/annotations/instances_train2017.json'
 valid_annot_file = 'data/annotations/instances_val2017.json'
 
 verbose = 1
-batch_size = 64
+batch_size = 32
 num_epochs = 1000
 patience = 50
 best_model = 'model.14-2474.5505.hdf5'
