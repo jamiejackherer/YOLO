@@ -1,8 +1,7 @@
 import os
 
+import cv2 as cv
 import numpy as np
-from keras.applications.vgg16 import preprocess_input
-from keras.preprocessing.image import (load_img, img_to_array)
 from keras.utils import Sequence
 from pycocotools.coco import COCO
 
@@ -72,12 +71,11 @@ class DataGenSequence(Sequence):
             img = self.coco.loadImgs(ids=[imgId])[0]
             file_name = img['file_name']
             filename = os.path.join(self.image_folder, file_name)
-            img = load_img(filename, target_size=(image_h, image_w))
-            img_array = img_to_array(img)
-            batch_x[i_batch, :, :] = img_array
-            batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
+            image_bgr = cv.imread(filename)
+            image_bgr = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
 
-        batch_x = preprocess_input(batch_x)
+            batch_x[i_batch, :, :] = image_bgr
+            batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
 
         return batch_x, batch_y
 
