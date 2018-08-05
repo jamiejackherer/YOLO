@@ -11,6 +11,7 @@ from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noob
 
 
 def yolo_loss(y_true, y_pred):
+    length = y_true.shape[0]
     conf = y_true[..., 0]  # [None, 14, 14]
     conf = K.expand_dims(conf, axis=-1)  # [None, 14, 14, 1]
     obj_i_mask = tf.to_float(conf == 1.0)  # [None, 14, 14, 1]
@@ -28,7 +29,7 @@ def yolo_loss(y_true, y_pred):
     loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat))
     loss_class = K.sum(obj_i_mask * K.square(cls - cls_hat))
     total_loss = loss_xy + loss_wh + loss_conf + loss_class
-    return total_loss
+    return total_loss / length
 
 
 def ensure_folder(folder):
