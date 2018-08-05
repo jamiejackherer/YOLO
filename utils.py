@@ -11,9 +11,9 @@ from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noob
 
 
 def yolo_loss(y_true, y_pred):
-    conf = y_true[..., 0]  # [None, 14, 14, 1]
-    obj_i_mask = tf.to_float(conf == 1.0)  # [None, 14, 14]
-    obj_i_mask = K.expand_dims(obj_i_mask, axis=-1)  # [None, 14, 14, 1]
+    conf = y_true[..., 0]  # [None, 14, 14]
+    conf = K.expand_dims(conf, axis=-1)  # [None, 14, 14, 1]
+    obj_i_mask = tf.to_float(conf == 1.0)  # [None, 14, 14, 1]
     noobj_i_mask = 1.0 - obj_i_mask  # [None, 14, 14, 1]
     conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)  # [None, 14, 14, 1]
     xy = y_true[..., 1:3]  # [None, 14, 14, 2]
