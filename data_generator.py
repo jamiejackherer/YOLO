@@ -74,10 +74,10 @@ class DataGenSequence(Sequence):
             filename = os.path.join(self.image_folder, file_name)
             img = load_img(filename, target_size=(image_h, image_w))
             img_array = img_to_array(img)
-            img_array = preprocess_input(img_array)
-
             batch_x[i_batch, :, :] = img_array
             batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
+
+        batch_x = preprocess_input(batch_x)
 
         return batch_x, batch_y
 
