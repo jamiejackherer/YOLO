@@ -1,14 +1,15 @@
 # import the necessary packages
 import os
+import random
 
 import cv2 as cv
 import keras.backend as K
 import numpy as np
 
 from config import image_h, image_w, valid_image_folder, best_model, labels, grid_size, \
-    score_threshold
+    score_threshold, num_grid
 from model import build_model
-from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, update_box_xy
+from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy
 
 if __name__ == '__main__':
     model = build_model()
@@ -19,8 +20,8 @@ if __name__ == '__main__':
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
     num_samples = 1
-    # samples = random.sample(test_images, num_samples)
-    samples = [test_images[0]]
+    random.seed(1)
+    samples = random.sample(test_images, num_samples)
 
     ensure_folder('images')
 
@@ -45,10 +46,12 @@ if __name__ == '__main__':
         print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_xy = preds[0, :, :, 1:3]
         box_xy = np.clip(box_xy, 0.0, 1.0)
-        box_xy = update_box_xy(box_xy)
+        box_xy = scale_box_xy(box_xy)
         print('np.mean(box_xy): ' + str(np.mean(box_xy)))
         print('np.std(box_xy): ' + str(np.std(box_xy)))
-        box_wh = preds[0, :, :, 3:5] * grid_size
+        box_wh = preds[0, :, :, 3:5]
+        box_wh = np.clip(box_wh, 0.0, num_grid)
+        box_wh = box_wh * grid_size
         print('np.mean(box_wh): ' + str(np.mean(box_wh)))
         print('np.std(box_wh): ' + str(np.std(box_wh)))
         box_class_probs = preds[0, :, :, 5:]

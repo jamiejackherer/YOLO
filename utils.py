@@ -136,29 +136,15 @@ def yolo_boxes_to_corners(box_xy, box_wh):
     return result
 
 
-def scale_boxes(boxes, image_shape):
-    height = image_shape[0]
-    width = image_shape[1]
-    image_dims = np.stack([height, width, height, width])
-    image_dims = np.reshape(image_dims, [1, 4])
-    boxes = boxes * image_dims
-    return boxes
-
-
-def sigmoid(x):
-    return 1.0 / (1.0 + np.exp(-x))
-
-
-def update_box_xy(box_xy):
-    result = box_xy.copy()
-    # shape = 14, 14, 5, 2
+def scale_box_xy(box_xy):
+    result = np.zeros_like(box_xy)
+    # shape = 14, 14, 2
     for cell_y in range(num_grid):
         for cell_x in range(num_grid):
-            for j in range(num_box):
-                bx = box_xy[cell_y, cell_x, j, 0]
-                by = box_xy[cell_y, cell_x, j, 1]
-                bx = (cell_x + bx) * grid_size
-                by = (cell_y + by) * grid_size
-                result[cell_y, cell_x, j, 0] = bx
-                result[cell_y, cell_x, j, 1] = by
+            bx = box_xy[cell_y, cell_x, 0]
+            by = box_xy[cell_y, cell_x, 1]
+            temp_x = (cell_x + bx) * grid_size
+            temp_y = (cell_y + by) * grid_size
+            result[cell_y, cell_x, 0] = temp_x
+            result[cell_y, cell_x, 1] = temp_y
     return result
