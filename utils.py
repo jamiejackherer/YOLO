@@ -69,10 +69,6 @@ def get_example_numbers():
 
 
 def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
-    print('type(box_confidence): ' + str(type(box_confidence)))
-    print(box_confidence)
-    print('type(boxes): ' + str(type(boxes)))
-    print('type(box_class_probs): ' + str(type(box_class_probs)))
     """Filters YOLO boxes by thresholding on object and class confidence.
 
     Arguments:
