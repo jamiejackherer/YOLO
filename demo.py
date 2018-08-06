@@ -39,6 +39,7 @@ if __name__ == '__main__':
         box_confidence = preds[0, :, :, 0]
         # print('box_confidence: ' + str(box_confidence))
         print('np.mean(box_confidence): ' + str(np.mean(box_confidence)))
+        print('np.max(box_confidence): ' + str(np.max(box_confidence)))
         print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_confidence = np.expand_dims(box_confidence, axis=-1)
         box_confidence = np.clip(box_confidence, 0.0, 1.0)
