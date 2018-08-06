@@ -4,12 +4,12 @@ from keras.layers import Conv2D
 from keras.layers.merge import concatenate
 from keras.models import Model
 
-from config import image_h, image_w, num_classes, num_box, num_grid
+from config import image_size, num_classes, num_box, num_grid
 from utils import space_to_depth_x2
 
 
 def build_model():
-    input_image = Input(shape=(image_h, image_w, 3))
+    input_image = Input(shape=(image_size, image_size, 3))
     # Layer 1	    input_image = base_model.input
     x = Conv2D(32, (3, 3), strides=(1, 1), padding='same', name='conv_1', use_bias=False)(input_image)
     x = BatchNormalization(name='norm_1')(x)

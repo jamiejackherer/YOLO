@@ -6,8 +6,7 @@ import cv2 as cv
 import keras.backend as K
 import numpy as np
 
-from config import image_size, valid_image_folder, best_model, labels, grid_size, \
-    score_threshold, num_grid
+from config import image_size, valid_image_folder, best_model, labels, grid_size, score_threshold
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str
 
