@@ -65,7 +65,7 @@ if __name__ == '__main__':
             x_min, y_min, x_max, y_max = box
             print('x_min={}, y_min={}, x_max={}, y_max={}'.format(x_min, y_min, x_max, y_max))
             cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))
-            draw_str(image_bgr, (x_min, y_min), label)
+            draw_str(image_bgr, (int(x_min), int(y_min)), label)
 
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)
 
