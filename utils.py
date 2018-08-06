@@ -17,17 +17,19 @@ def yolo_loss(y_true, y_pred):
     noobj_i_mask = 1.0 - obj_i_mask  # [None, 14, 14, 1]
     conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)  # [None, 14, 14, 1]
     xy = y_true[..., 1:3]  # [None, 14, 14, 2]
-    xy_hat = y_pred[..., 1:3]  # [None, 14, 14, 5, 2]
-    wh = y_true[..., 3:5]  # [None, 14, 14, 5, 2]
-    wh_hat = y_pred[..., 3:5]  # [None, 14, 14, 5, 2]
-    cls = y_true[..., 5:]  # [None, 14, 14, 5, 80]
-    cls_hat = y_pred[..., 5:]  # [None, 14, 14, 5, 80]
-    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat))
-    loss_wh = lambda_coord * K.sum(obj_i_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)))
-    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat))
-    loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat))
-    loss_class = K.sum(obj_i_mask * K.square(cls - cls_hat))
-    total_loss = loss_xy + loss_wh + loss_conf + loss_class
+    xy_hat = y_pred[..., 1:3]  # [None, 14, 14, 2]
+    wh = y_true[..., 3:5]  # [None, 14, 14, 2]
+    wh_hat = y_pred[..., 3:5]  # [None, 14, 14, 2]
+    cls = y_true[..., 5:]  # [None, 14, 14, 80]
+    cls_hat = y_pred[..., 5:]  # [None, 14, 14, 80]
+    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))  # [None, 14, 14, 2] -> [None]
+    loss_wh = lambda_coord * K.sum(obj_i_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)),
+                                   axis=(1, 2, 3))  # [None, 14, 14, 2] -> [None]
+    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))  # [None, 14, 14, 1] -> [None]
+    loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat),
+                                      axis=(1, 2, 3))  # [None, 14, 14, 1] -> [None]
+    loss_class = K.sum(obj_i_mask * K.square(cls - cls_hat), axis=(1, 2, 3))  # [None, 14, 14, 80] -> [None]
+    total_loss = K.mean(loss_xy + loss_wh + loss_conf + loss_class)
     return total_loss
 
 
