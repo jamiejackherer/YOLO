@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import image_size, valid_annot_file, lambda_coord, lambda_noobj, num_grid, grid_size
+from config import image_size, valid_annot_file, lambda_coord, lambda_noobj, num_grid, grid_size, train_annot_file
 
 
 def yolo_loss(y_true, y_pred):
