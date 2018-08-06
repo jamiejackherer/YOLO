@@ -9,7 +9,7 @@ import numpy as np
 from config import image_h, image_w, valid_image_folder, best_model, labels, grid_size, \
     score_threshold, num_grid
 from model import build_model
-from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy
+from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str
 
 if __name__ == '__main__':
     model = build_model()
@@ -63,10 +63,12 @@ if __name__ == '__main__':
 
         for j, cls in enumerate(classes):
             box = boxes[j]
-            print(labels[cls])
+            label = labels[cls]
+            print(label)
             x_min, y_min, x_max, y_max = box
             print('x_min={}, y_min={}, x_max={}, y_max={}'.format(x_min, y_min, x_max, y_max))
             cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))
+            draw_str(image_bgr, (x_min, y_min), label)
 
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)
 

@@ -148,3 +148,9 @@ def scale_box_xy(box_xy):
             result[cell_y, cell_x, 0] = temp_x
             result[cell_y, cell_x, 1] = temp_y
     return result
+
+
+def draw_str(dst, target, s):
+    x, y = target
+    cv.putText(dst, s, (x + 1, y + 1), cv.FONT_HERSHEY_PLAIN, 0.8, (0, 0, 0), thickness=2, lineType=cv.LINE_AA)
+    cv.putText(dst, s, (x, y), cv.FONT_HERSHEY_PLAIN, 0.8, (255, 255, 255), lineType=cv.LINE_AA)
