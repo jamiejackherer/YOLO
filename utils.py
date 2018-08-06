@@ -96,6 +96,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     print('box_classes.shape: ' + str(box_classes.shape))
     box_class_scores = np.max(box_scores, axis=-1, keepdims=True)   # [14, 14, 1]
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
+    print('np.mean(box_class_scores): ' + str(np.mean(box_class_scores)))
+    print('np.max(box_class_scores): ' + str(np.max(box_class_scores)))
+    print('np.std(box_class_scores): ' + str(np.std(box_class_scores)))
 
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
     # same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
