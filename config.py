@@ -35,4 +35,4 @@ lambda_noobj = 0.5
 
 max_boxes = 10  # integer, maximum number of predicted boxes in an image
 iou_threshold = 0.5  # real value, "intersection over union" threshold used for NMS filtering
-score_threshold = 0.6  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
+score_threshold = 0.3  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
