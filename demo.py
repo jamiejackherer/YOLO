@@ -4,12 +4,11 @@ import os
 import cv2 as cv
 import keras.backend as K
 import numpy as np
-import tensorflow as tf
 
-from config import image_h, image_w, valid_image_folder, max_boxes, iou_threshold, best_model, labels, grid_size, \
+from config import image_h, image_w, valid_image_folder, best_model, labels, grid_size, \
     score_threshold
 from model import build_model
-from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_boxes, update_box_xy
+from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, update_box_xy
 
 if __name__ == '__main__':
     model = build_model()
@@ -38,36 +37,32 @@ if __name__ == '__main__':
         # print('preds: ' + str(preds))
         box_confidence = preds[0, :, :, 0]
         # print('box_confidence: ' + str(box_confidence))
+        print('np.mean(box_confidence): ' + str(np.mean(box_confidence)))
+        print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_confidence = np.expand_dims(box_confidence, axis=-1)
         box_confidence = np.clip(box_confidence, 0.0, 1.0)
+        print('np.mean(box_confidence): ' + str(np.mean(box_confidence)))
+        print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_xy = preds[0, :, :, 1:3]
         box_xy = np.clip(box_xy, 0.0, 1.0)
         box_xy = update_box_xy(box_xy)
-        # print('box_xy: ' + str(box_xy))
+        print('np.mean(box_xy): ' + str(np.mean(box_xy)))
+        print('np.std(box_xy): ' + str(np.std(box_xy)))
         box_wh = preds[0, :, :, 3:5] * grid_size
-        # print('box_wh: ' + str(box_wh))
+        print('np.mean(box_wh): ' + str(np.mean(box_wh)))
+        print('np.std(box_wh): ' + str(np.std(box_wh)))
         box_class_probs = preds[0, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
-        # print('boxes after to_corners: ' + str(boxes))
+        print('boxes.shape: ' + str(boxes.shape))
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs, score_threshold)
-        boxes = scale_boxes(boxes, image_shape)
         boxes = np.reshape(boxes, (-1, 4))
-        print('boxes after scale: ' + str(boxes))
-        scores = np.reshape(scores, (-1))
-        classes = np.reshape(classes, (-1))
-        nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
-        nms_indices = K.eval(nms_indices)
-        print('nms_indices: ' + str(nms_indices))
-        scores = scores[nms_indices]
-        boxes = boxes[nms_indices]
-        # print('classes.shape: ' + str(classes.shape))
-        classes = classes[nms_indices]
+        print('boxes after reshape: ' + str(boxes))
 
         for j, cls in enumerate(classes):
             box = boxes[j]
             print(labels[cls])
-            y_min, x_min, y_max, x_max = box
-            print('y_min={}, x_min={}, y_max={}, x_max={}'.format(y_min, x_min, y_max, x_max))
+            x_min, y_min, x_max, y_max = box
+            print('x_min={}, y_min={}, x_max={}, y_max={}'.format(x_min, y_min, x_max, y_max))
             cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))
 
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)

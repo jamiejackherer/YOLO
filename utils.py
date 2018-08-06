@@ -76,9 +76,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """Filters YOLO boxes by thresholding on object and class confidence.
 
     Arguments:
-    box_confidence -- tensor of shape (14, 14, 5, 1)
-    boxes -- tensor of shape (14, 14, 5, 4)
-    box_class_probs -- tensor of shape (14, 14, 5, 80)
+    box_confidence -- tensor of shape (14, 14, 1)
+    boxes -- tensor of shape (14, 14, 4)
+    box_class_probs -- tensor of shape (14, 14, 80)
     threshold -- real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 
     Returns:
@@ -91,52 +91,52 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """
 
     # Step 1: Compute box scores
-    box_scores = box_confidence * box_class_probs
+    box_scores = box_confidence * box_class_probs   # [14, 14, 80]
     print('box_scores.shape: ' + str(box_scores.shape))
 
     # Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
-    box_classes = np.argmax(box_scores, axis=-1)
-    box_classes = np.expand_dims(box_classes, axis=-1)
+    box_classes = np.argmax(box_scores, axis=-1)    # [14, 14]
+    box_classes = np.expand_dims(box_classes, axis=-1)  # [14, 14, 1]
     print('box_classes.shape: ' + str(box_classes.shape))
-    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)
+    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)   # [14, 14, 1]
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
 
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
     # same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
-    filtering_mask = box_class_scores >= threshold
-    print('filtering_mask: ' + str(filtering_mask))
+    filtering_mask = box_class_scores >= threshold  # [14, 14, 1]
+    # print('filtering_mask: ' + str(filtering_mask))
     print('filtering_mask.shape: ' + str(filtering_mask.shape))
-    print('type(filtering_mask): ' + str(type(filtering_mask)))
 
     # Step 4: Apply the mask to scores, boxes and classes
     scores = box_class_scores[filtering_mask]
-    print('scores.shape: ' + str(scores.shape))
-    print('type(scores): ' + str(type(scores)))
-    boxes = boxes[np.repeat(filtering_mask, 4, axis=3)]
+    print('scores.shape: ' + str(scores.shape))             # [num_remain]
+    boxes = boxes[np.repeat(filtering_mask, 4, axis=2)]     # [num_remain x 4]
     print('boxes.shape: ' + str(boxes.shape))
-    print('type(boxes): ' + str(type(boxes)))
-    classes = box_classes[filtering_mask]
+    classes = box_classes[filtering_mask]                   # [num_remain]
     print('classes.shape: ' + str(classes.shape))
-    print('type(classes): ' + str(type(classes)))
 
     return scores, boxes, classes
 
 
+# box_xy: [14, 14, 2]
+# box_wh: [14, 14, 2]
 def yolo_boxes_to_corners(box_xy, box_wh):
     """Convert YOLO box predictions to bounding box corners."""
     box_mins = box_xy - (box_wh / 2.)
     box_maxes = box_xy + (box_wh / 2.)
 
-    return np.concatenate([
-        box_mins[..., 1:2],  # y_min
+    # [14, 14, 4]
+    result = np.concatenate([
         box_mins[..., 0:1],  # x_min
-        box_maxes[..., 1:2],  # y_max
-        box_maxes[..., 0:1]  # x_max
+        box_mins[..., 1:2],  # y_min
+        box_maxes[..., 0:1],  # x_max
+        box_maxes[..., 1:2]  # y_max
     ], axis=-1)
+    print('result.shape: ' + str(result.shape))
+    return result
 
 
 def scale_boxes(boxes, image_shape):
-    """ Scales the predicted boxes in order to be drawable on the image"""
     height = image_shape[0]
     width = image_shape[1]
     image_dims = np.stack([height, width, height, width])
