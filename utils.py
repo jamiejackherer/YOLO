@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import train_annot_file, valid_annot_file, lambda_coord, lambda_noobj, num_grid, num_box, grid_size
+from config import image_size, valid_annot_file, lambda_coord, lambda_noobj, num_grid, grid_size
 
 
 def yolo_loss(y_true, y_pred):
@@ -120,6 +120,8 @@ def yolo_boxes_to_corners(box_xy, box_wh):
     """Convert YOLO box predictions to bounding box corners."""
     box_mins = box_xy - (box_wh / 2.)
     box_maxes = box_xy + (box_wh / 2.)
+    box_mins = np.clip(box_mins, 0, image_size - 1)
+    box_maxes = np.clip(box_maxes, 0, image_size - 1)
 
     # [14, 14, 4]
     result = np.concatenate([

@@ -5,32 +5,32 @@ import numpy as np
 from keras.utils import Sequence
 from pycocotools.coco import COCO
 
-from config import batch_size, image_h, image_w, grid_h, grid_w, num_classes, num_channels, num_grid
+from config import batch_size, image_size, grid_size, num_classes, num_channels, num_grid
 from config import train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx
 
 
 def get_ground_truth(coco, imgId):
     gt = np.zeros((num_grid, num_grid, 4 + 1 + num_classes), dtype=np.float32)
-    img = coco.loadImgs(ids=[imgId])[0]
-    img_height = img['height']
-    img_width = img['width']
+    original = coco.loadImgs(ids=[imgId])[0]
+    original_height = original['height']
+    original_width = original['width']
     annIds = coco.getAnnIds(imgIds=[imgId])
     annos = coco.loadAnns(ids=annIds)
     for anno in annos:
         category_id = anno['category_id']
         xmin, ymin, width, height = anno['bbox']
-        xmin = 1.0 * xmin * image_w / img_width
-        ymin = 1.0 * ymin * image_h / img_height
-        width = 1.0 * width * image_w / img_width
-        height = 1.0 * height * image_h / img_height
+        xmin = 1.0 * xmin * image_size / original_width
+        ymin = 1.0 * ymin * image_size / original_height
+        width = 1.0 * width * image_size / original_width
+        height = 1.0 * height * image_size / original_height
         x_center = xmin + width / 2
         y_center = ymin + height / 2
-        cell_x = int(x_center / grid_w)
-        cell_y = int(y_center / grid_h)
-        bx = x_center / grid_w - cell_x
-        by = y_center / grid_h - cell_y
-        bw = width / grid_w
-        bh = height / grid_h
+        cell_x = int(x_center / grid_size)
+        cell_y = int(y_center / grid_size)
+        bx = x_center / grid_size - cell_x
+        by = y_center / grid_size - cell_y
+        bw = width / grid_size
+        bh = height / grid_size
         gt[cell_y, cell_x, 0] = 1.0
         gt[cell_y, cell_x, 1] = bx
         gt[cell_y, cell_x, 2] = by

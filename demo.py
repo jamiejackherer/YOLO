@@ -6,7 +6,7 @@ import cv2 as cv
 import keras.backend as K
 import numpy as np
 
-from config import image_h, image_w, valid_image_folder, best_model, labels, grid_size, \
+from config import image_size, valid_image_folder, best_model, labels, grid_size, \
     score_threshold, num_grid
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         image_bgr = cv.imread(filename)
         image_shape = image_bgr.shape
         print('image_shape: ' + str(image_shape))
-        image_input = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
+        image_input = cv.resize(image_bgr, (image_size, image_size), cv.INTER_CUBIC)
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 85]
         box_confidence = preds[0, :, :, 0]
@@ -47,9 +47,10 @@ if __name__ == '__main__':
         print('np.mean(box_xy): ' + str(np.mean(box_xy)))
         print('np.std(box_xy): ' + str(np.std(box_xy)))
         box_wh = preds[0, :, :, 3:5]
-        box_wh = np.clip(box_wh, 0.0, num_grid)
         box_wh = box_wh * grid_size
+        box_wh = np.clip(box_wh, 0.0, image_size - 1)
         print('np.mean(box_wh): ' + str(np.mean(box_wh)))
+        print('np.max(box_wh): ' + str(np.max(box_wh)))
         print('np.std(box_wh): ' + str(np.std(box_wh)))
         box_class_probs = preds[0, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
