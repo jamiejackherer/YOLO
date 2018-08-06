@@ -46,8 +46,8 @@ if __name__ == '__main__':
         print('np.mean(box_xy): ' + str(np.mean(box_xy)))
         print('np.std(box_xy): ' + str(np.std(box_xy)))
         box_wh = preds[0, :, :, 3:5]
-        box_wh = box_wh * grid_size
-        box_wh = np.clip(box_wh, 0.0, image_size - 1)
+        box_wh = np.clip(box_wh, 0.0, 1.0)
+        box_wh = box_wh * image_size
         print('np.mean(box_wh): ' + str(np.mean(box_wh)))
         print('np.max(box_wh): ' + str(np.max(box_wh)))
         print('np.std(box_wh): ' + str(np.std(box_wh)))
