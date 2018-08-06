@@ -35,15 +35,11 @@ if __name__ == '__main__':
         image_input = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
         image_input = np.expand_dims(image_input, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 14, 14, 85]
-        # print('preds: ' + str(preds))
         box_confidence = preds[0, :, :, 0]
-        # print('box_confidence: ' + str(box_confidence))
-        print('np.mean(box_confidence): ' + str(np.mean(box_confidence)))
-        print('np.max(box_confidence): ' + str(np.max(box_confidence)))
-        print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_confidence = np.expand_dims(box_confidence, axis=-1)
         box_confidence = np.clip(box_confidence, 0.0, 1.0)
         print('np.mean(box_confidence): ' + str(np.mean(box_confidence)))
+        print('np.max(box_confidence): ' + str(np.max(box_confidence)))
         print('np.std(box_confidence): ' + str(np.std(box_confidence)))
         box_xy = preds[0, :, :, 1:3]
         box_xy = np.clip(box_xy, 0.0, 1.0)
