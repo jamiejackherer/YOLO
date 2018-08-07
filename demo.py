@@ -50,6 +50,7 @@ if __name__ == '__main__':
         box_wh = box_wh * image_size
         print('np.mean(box_wh): ' + str(np.mean(box_wh)))
         print('np.max(box_wh): ' + str(np.max(box_wh)))
+        print('np.min(box_wh): ' + str(np.min(box_wh)))
         print('np.std(box_wh): ' + str(np.std(box_wh)))
         box_class_probs = preds[0, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
