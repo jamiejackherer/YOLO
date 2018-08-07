@@ -53,9 +53,11 @@ if __name__ == '__main__':
         print('np.std(box_wh): ' + str(np.std(box_wh)))
         box_class_probs = preds[0, :, :, 5:]
         boxes = yolo_boxes_to_corners(box_xy, box_wh)
-        print('boxes: ' + str(boxes))
         print('boxes.shape: ' + str(boxes.shape))
         scores, boxes, classes = filter_boxes(box_confidence, boxes, box_class_probs, score_threshold)
+        print('scores: ' + str(scores))
+        print('boxes: ' + str(boxes))
+        print('classes: ' + str(classes))
         boxes = np.reshape(boxes, (-1, 4))
         print('boxes after reshape: ' + str(boxes))
 
