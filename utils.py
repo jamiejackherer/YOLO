@@ -11,24 +11,24 @@ from config import image_size, valid_annot_file, lambda_coord, lambda_noobj, num
 
 
 def yolo_loss(y_true, y_pred):
-    conf = y_true[..., 0]  # [None, 14, 14]
-    conf = K.expand_dims(conf, axis=-1)  # [None, 14, 14, 1]
-    obj_i_mask = tf.to_float(conf == 1.0)  # [None, 14, 14, 1]
-    noobj_i_mask = 1.0 - obj_i_mask  # [None, 14, 14, 1]
-    conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)  # [None, 14, 14, 1]
-    xy = y_true[..., 1:3]  # [None, 14, 14, 2]
-    xy_hat = y_pred[..., 1:3]  # [None, 14, 14, 2]
-    wh = y_true[..., 3:5]  # [None, 14, 14, 2]
-    wh_hat = y_pred[..., 3:5]  # [None, 14, 14, 2]
-    cls = y_true[..., 5:]  # [None, 14, 14, 80]
-    cls_hat = y_pred[..., 5:]  # [None, 14, 14, 80]
-    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))  # [None, 14, 14, 2] -> [None]
+    conf = y_true[..., 0]                   # [None, 13, 13]
+    conf = K.expand_dims(conf, axis=-1)     # [None, 13, 13, 1]
+    obj_i_mask = tf.to_float(conf == 1.0)   # [None, 13, 13, 1]
+    noobj_i_mask = 1.0 - obj_i_mask         # [None, 13, 13, 1]
+    conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)  # [None, 13, 13, 1]
+    xy = y_true[..., 1:3]                   # [None, 13, 13, 2]
+    xy_hat = y_pred[..., 1:3]               # [None, 13, 13, 2]
+    wh = y_true[..., 3:5]                   # [None, 13, 13, 2]
+    wh_hat = y_pred[..., 3:5]               # [None, 13, 13, 2]
+    classes = y_true[..., 5:]               # [None, 13, 13, 80]
+    classes_hat = y_pred[..., 5:]           # [None, 13, 13, 80]
+    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))  # [None, 13, 13, 2] -> [None]
     loss_wh = lambda_coord * K.sum(obj_i_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)),
-                                   axis=(1, 2, 3))  # [None, 14, 14, 2] -> [None]
-    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))  # [None, 14, 14, 1] -> [None]
+                                   axis=(1, 2, 3))  # [None, 13, 13, 2] -> [None]
+    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))  # [None, 13, 13, 1] -> [None]
     loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat),
-                                      axis=(1, 2, 3))  # [None, 14, 14, 1] -> [None]
-    loss_class = K.sum(obj_i_mask * K.square(cls - cls_hat), axis=(1, 2, 3))  # [None, 14, 14, 80] -> [None]
+                                      axis=(1, 2, 3))  # [None, 13, 13, 1] -> [None]
+    loss_class = K.sum(obj_i_mask * K.square(classes - classes_hat), axis=(1, 2, 3))  # [None, 13, 13, 80] -> [None]
     total_loss = K.mean(loss_xy + loss_wh + loss_conf + loss_class)
     return total_loss
 

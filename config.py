@@ -1,8 +1,11 @@
-image_size = 448
+image_size = 416
 num_channels = 3
 grid_size = 32
-num_grid = image_size // grid_size
+num_grid = image_size // grid_size # 13
 num_box = 1
+
+score_threshold = 0.2  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
+iou_threshold = 0.5  # real value, "intersection over union" threshold used for NMS filtering
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
@@ -34,5 +37,4 @@ lambda_coord = 5.0
 lambda_noobj = 0.5
 
 max_boxes = 10  # integer, maximum number of predicted boxes in an image
-iou_threshold = 0.5  # real value, "intersection over union" threshold used for NMS filtering
-score_threshold = 0.2  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
+
