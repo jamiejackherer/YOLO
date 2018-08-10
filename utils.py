@@ -58,6 +58,7 @@ def yolo_loss(y_true, y_pred):
     best_ious = iou_scores
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - coord_mask) * lambda_noobj
     conf_mask = conf_mask + coord_mask * lambda_coord
+    # [None, 13, 13]
     class_mask = y_true[..., 0] * tf.gather(class_weights, box_class) * lambda_class
 
     nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
