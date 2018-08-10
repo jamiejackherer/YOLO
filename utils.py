@@ -65,7 +65,7 @@ def yolo_loss(y_true, y_pred):
     nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
 
     loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + 1e-6)
-    loss_wh = tf.reduce_sum(tf.square(tf.sqrt(box_wh) - tf.sqrt(box_wh_hat)) * coord_mask) / (nb_coord_box + 1e-6)
+    loss_wh = tf.reduce_sum(tf.square(tf.sqrt(tf.abs(box_wh)) - tf.sqrt(tf.abs(box_wh_hat))) * coord_mask) / (nb_coord_box + 1e-6)
     loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + 1e-6)
     loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=box_class, logits=box_class_hat)
     loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
