@@ -48,6 +48,7 @@ def yolo_loss(y_true, y_pred):
     box_conf = iou_scores * box_conf
     # [None, 13, 13, 80]
     box_class = tf.argmax(y_true[..., 5:], -1)
+    box_class = K.expand_dims(box_class, axis=-1)
     # [None, 13, 13, 80]
     box_class_hat = y_pred[..., 5:]
 
