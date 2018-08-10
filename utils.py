@@ -7,37 +7,73 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import image_size, valid_annot_file, lambda_coord, lambda_noobj, num_grid, grid_size, train_annot_file
+from config import image_size, valid_annot_file, num_grid, grid_size, train_annot_file
+from config import lambda_coord, lambda_noobj, lambda_class
 
 
 def yolo_loss(y_true, y_pred):
-    conf = y_true[..., 0]                   # [None, 13, 13]
-    conf = K.expand_dims(conf, axis=-1)     # [None, 13, 13, 1]
-    obj_i_mask = tf.to_float(conf == 1.0)   # [None, 13, 13, 1]
-    noobj_i_mask = 1.0 - obj_i_mask         # [None, 13, 13, 1]
-    conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)  # [None, 13, 13, 1]
-    xy = y_true[..., 1:3]                   # [None, 13, 13, 2]
-    xy_hat = y_pred[..., 1:3]               # [None, 13, 13, 2]
-    wh = y_true[..., 3:5]                   # [None, 13, 13, 2]
-    wh_hat = y_pred[..., 3:5]               # [None, 13, 13, 2]
-    classes = y_true[..., 5:]               # [None, 13, 13, 80]
-    classes_hat = y_pred[..., 5:]           # [None, 13, 13, 80]
+    # [None, 13, 13, 1]
+    box_conf = K.expand_dims(y_true[..., 0], axis=-1)
+    # [None, 13, 13, 2]
+    box_xy = y_true[..., 1:3]
+    # [None, 13, 13, 2]
+    box_wh = y_true[..., 3:5]
+    box_wh_half = box_wh / 2.
+    box_mins = box_xy - box_wh_half
+    box_maxes = box_xy + box_wh_half
+
+    # [None, 13, 13, 1]
+    box_conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)
+    # [None, 13, 13, 2]
+    box_xy_hat = y_pred[..., 1:3]
+    # [None, 13, 13, 2]
+    box_wh_hat = y_pred[..., 3:5]
+    box_wh_half_hat = box_wh_hat / 2.
+    box_mins_hat = box_xy_hat - box_wh_half_hat
+    box_maxes_hat = box_xy_hat + box_wh_half_hat
+
+    intersect_mins = tf.maximum(box_mins_hat, box_mins)
+    intersect_maxes = tf.minimum(box_maxes_hat, box_maxes)
+    intersect_wh = tf.maximum(intersect_maxes - intersect_mins, 0.)
+    intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
+
+    true_areas = box_wh[..., 0] * box_wh[..., 1]
+    pred_areas = box_wh_hat[..., 0] * box_wh_hat[..., 1]
+
+    union_areas = pred_areas + true_areas - intersect_areas
+    iou_scores = tf.truediv(intersect_areas, union_areas)
+
+    box_conf = iou_scores * box_conf
+    box_class = tf.argmax(y_true[..., 5:], -1)
+
+    # the position of the ground truth boxes (the predictors)
+    # [None, 13, 13, 1]
+    coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
+    best_ious = tf.reduce_max(iou_scores, axis=4)
+    conf_mask = tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * lambda_noobj
+    conf_mask = conf_mask + y_true[..., 4] * lambda_coord
+    class_mask = y_true[..., 4] * tf.gather(CLASS_WEIGHTS, box_class) * lambda_class
+
+    # [None, 13, 13, 80]
+    classes = y_true[..., 5:]
+    # [None, 13, 13, 80]
+    classes_hat = y_pred[..., 5:]
 
     # [None, 13, 13, 2] -> [None]
-    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))
+    loss_xy = lambda_coord * K.sum(coord_mask * K.square(box_xy - box_xy_hat), axis=(1, 2, 3))
     loss_xy = K.mean(loss_xy)
     # [None, 13, 13, 2] -> [None]
-    loss_wh = lambda_coord * K.sum(obj_i_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)),
+    loss_wh = lambda_coord * K.sum(coord_mask * K.square(K.sqrt(box_wh) - K.sqrt(box_wh_hat)),
                                    axis=(1, 2, 3))
     loss_wh = K.mean(loss_wh)
     # [None, 13, 13, 1] -> [None]
-    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))
+    loss_conf = K.sum(coord_mask * K.square(box_conf - box_conf_hat), axis=(1, 2, 3))
     # [None, 13, 13, 1] -> [None]
-    loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat),
+    loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(box_conf - box_conf_hat),
                                       axis=(1, 2, 3))
     loss_conf = K.mean(loss_conf)
     # [None, 13, 13, 80] -> [None]
-    loss_class = K.sum(obj_i_mask * K.square(classes - classes_hat), axis=(1, 2, 3))
+    loss_class = K.sum(coord_mask * K.square(classes - classes_hat), axis=(1, 2, 3))
     loss_class = K.mean(loss_class)
     total_loss = loss_xy + loss_wh + loss_conf + loss_class
     return total_loss
