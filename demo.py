@@ -19,7 +19,7 @@ if __name__ == '__main__':
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
     num_samples = 1
-    random.seed(1)
+    # random.seed(1)
     samples = random.sample(test_images, num_samples)
 
     ensure_folder('images')
@@ -31,8 +31,8 @@ if __name__ == '__main__':
         image_bgr = cv.imread(filename)
         image_shape = image_bgr.shape
         print('image_shape: ' + str(image_shape))
-        image_input = cv.resize(image_bgr, (image_size, image_size), cv.INTER_CUBIC)
-        image_input = np.expand_dims(image_input, 0).astype(np.float32)
+        image_bgr = cv.resize(image_bgr, (image_size, image_size), cv.INTER_CUBIC)
+        image_input = np.expand_dims(image_bgr, 0).astype(np.float32)
         preds = model.predict(image_input)  # [1, 13, 13, 85]
         box_confidence = preds[0, :, :, 0]
         box_confidence = np.expand_dims(box_confidence, axis=-1)
