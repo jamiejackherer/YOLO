@@ -41,7 +41,7 @@ def yolo_loss(y_true, y_pred):
     true_areas = box_wh[..., 0] * box_wh[..., 1]
     pred_areas = box_wh_hat[..., 0] * box_wh_hat[..., 1]
 
-    union_areas = pred_areas + true_areas - intersect_areas
+    union_areas = pred_areas + true_areas - intersect_areas + 1e-6
     iou_scores = tf.truediv(intersect_areas, union_areas)
     iou_scores = K.expand_dims(iou_scores, axis=-1)
 
@@ -80,13 +80,13 @@ def yolo_loss(y_true, y_pred):
     """
     current_recall = nb_pred_box / (nb_true_box + 1e-6)
 
-    loss = tf.Print(loss, [tf.zeros((1))], message='Dummy Line \t', summarize=1000)
-    loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
-    loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
-    loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
-    loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
-    loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
-    loss = tf.Print(loss, [current_recall], message='Current Recall \t', summarize=1000)
+    loss = tf.Print(loss, [tf.zeros((1))], first_n=10, message='Dummy Line \t', summarize=1000)
+    loss = tf.Print(loss, [loss_xy], first_n=10, message='Loss XY \t', summarize=1000)
+    loss = tf.Print(loss, [loss_wh], first_n=10, message='Loss WH \t', summarize=1000)
+    loss = tf.Print(loss, [loss_conf], first_n=10, message='Loss Conf \t', summarize=1000)
+    loss = tf.Print(loss, [loss_class], first_n=10, message='Loss Class \t', summarize=1000)
+    loss = tf.Print(loss, [loss], first_n=10, message='Total Loss \t', summarize=1000)
+    loss = tf.Print(loss, [current_recall], first_n=10, message='Current Recall \t', summarize=1000)
 
     return loss
 
