@@ -52,7 +52,7 @@ def yolo_loss(y_true, y_pred):
     # the position of the ground truth boxes (the predictors)
     # [None, 13, 13, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
-    best_ious = tf.reduce_max(iou_scores, axis=4)
+    best_ious = tf.reduce_max(iou_scores, axis=3)
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * lambda_noobj
     conf_mask = conf_mask + y_true[..., 4] * lambda_coord
     class_mask = y_true[..., 4] * tf.gather(class_weights, box_class) * lambda_class
