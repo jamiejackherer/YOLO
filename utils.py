@@ -38,8 +38,9 @@ def yolo_loss(y_true, y_pred):
     loss_conf = K.mean(loss_conf)
     # [None, 13, 13, 80] -> [None]
     loss_class = K.sum(obj_i_mask * K.square(classes - classes_hat), axis=(1, 2, 3))
-    # total_loss = loss_xy + loss_wh + loss_conf + loss_class
-    return loss_xy, loss_wh, loss_conf, loss_class
+    loss_class = K.mean(loss_class)
+    total_loss = loss_xy + loss_wh + loss_conf + loss_class
+    return total_loss
 
 
 def ensure_folder(folder):
