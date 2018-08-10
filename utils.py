@@ -65,7 +65,8 @@ def yolo_loss(y_true, y_pred):
     nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
 
     loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + 1e-6)
-    loss_wh = tf.reduce_sum(tf.square(tf.sqrt(tf.abs(box_wh)) - tf.sqrt(tf.abs(box_wh_hat))) * coord_mask) / (nb_coord_box + 1e-6)
+    loss_wh = tf.reduce_sum(tf.square(tf.sqrt(tf.abs(box_wh)) - tf.sqrt(tf.abs(box_wh_hat))) * coord_mask) / (
+                nb_coord_box + 1e-6)
     loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + 1e-6)
     loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=box_class, logits=box_class_hat)
     loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
@@ -80,13 +81,13 @@ def yolo_loss(y_true, y_pred):
     """
     current_recall = nb_pred_box / (nb_true_box + 1e-6)
 
-    loss = tf.Print(loss, [tf.zeros((1))], message='Dummy Line \t', summarize=1000)
-    loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
-    loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
-    loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
-    loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
-    loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
-    loss = tf.Print(loss, [current_recall], message='Current Recall \t', summarize=1000)
+    loss = tf.Print(loss, [tf.zeros((1))], first_n=10, message='Dummy Line \t', summarize=1000)
+    loss = tf.Print(loss, [loss_xy], first_n=10, message='Loss XY \t', summarize=1000)
+    loss = tf.Print(loss, [loss_wh], first_n=10, message='Loss WH \t', summarize=1000)
+    loss = tf.Print(loss, [loss_conf], first_n=10, message='Loss Conf \t', summarize=1000)
+    loss = tf.Print(loss, [loss_class], first_n=10, message='Loss Class \t', summarize=1000)
+    loss = tf.Print(loss, [loss], first_n=10, message='Total Loss \t', summarize=1000)
+    loss = tf.Print(loss, [current_recall], first_n=10, message='Current Recall \t', summarize=1000)
 
     return loss
 
