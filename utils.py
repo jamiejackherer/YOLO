@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 from config import image_size, valid_annot_file, num_grid, grid_size, train_annot_file, class_weights
-from config import lambda_coord, lambda_noobj, lambda_class
+from config import lambda_coord, lambda_noobj, lambda_class, lambda_obj
 
 
 def yolo_loss(y_true, y_pred):
@@ -56,7 +56,7 @@ def yolo_loss(y_true, y_pred):
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
     best_ious = iou_scores
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - coord_mask) * lambda_noobj
-    conf_mask = conf_mask + coord_mask * lambda_coord
+    conf_mask = conf_mask + coord_mask * lambda_obj
     # [None, 13, 13]
     class_mask = y_true[..., 0] * tf.gather(class_weights, box_class) * lambda_class
 

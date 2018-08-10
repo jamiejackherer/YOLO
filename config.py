@@ -36,8 +36,9 @@ num_epochs = 1000
 patience = 50
 best_model = 'model.00-2.7064.hdf5'
 
-lambda_coord = 5.0
-lambda_noobj = 0.5
+lambda_coord = 1.0
+lambda_obj = 5.0
+lambda_noobj = 1.0
 lambda_class = 1.0
 
 max_boxes = 10  # integer, maximum number of predicted boxes in an image
