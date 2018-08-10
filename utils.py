@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-from config import image_size, valid_annot_file, num_grid, grid_size, train_annot_file
+from config import image_size, valid_annot_file, num_grid, grid_size, train_annot_file, class_weights
 from config import lambda_coord, lambda_noobj, lambda_class
 
 
@@ -44,7 +44,10 @@ def yolo_loss(y_true, y_pred):
     iou_scores = tf.truediv(intersect_areas, union_areas)
 
     box_conf = iou_scores * box_conf
+    # [None, 13, 13, 80]
     box_class = tf.argmax(y_true[..., 5:], -1)
+    # [None, 13, 13, 80]
+    box_class_hat = y_pred[..., 5:]
 
     # the position of the ground truth boxes (the predictors)
     # [None, 13, 13, 1]
@@ -52,31 +55,37 @@ def yolo_loss(y_true, y_pred):
     best_ious = tf.reduce_max(iou_scores, axis=4)
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - y_true[..., 4]) * lambda_noobj
     conf_mask = conf_mask + y_true[..., 4] * lambda_coord
-    class_mask = y_true[..., 4] * tf.gather(CLASS_WEIGHTS, box_class) * lambda_class
+    class_mask = y_true[..., 4] * tf.gather(class_weights, box_class) * lambda_class
 
-    # [None, 13, 13, 80]
-    classes = y_true[..., 5:]
-    # [None, 13, 13, 80]
-    classes_hat = y_pred[..., 5:]
+    nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
+    nb_conf_box = tf.reduce_sum(tf.to_float(conf_mask > 0.0))
+    nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
 
-    # [None, 13, 13, 2] -> [None]
-    loss_xy = lambda_coord * K.sum(coord_mask * K.square(box_xy - box_xy_hat), axis=(1, 2, 3))
-    loss_xy = K.mean(loss_xy)
-    # [None, 13, 13, 2] -> [None]
-    loss_wh = lambda_coord * K.sum(coord_mask * K.square(K.sqrt(box_wh) - K.sqrt(box_wh_hat)),
-                                   axis=(1, 2, 3))
-    loss_wh = K.mean(loss_wh)
-    # [None, 13, 13, 1] -> [None]
-    loss_conf = K.sum(coord_mask * K.square(box_conf - box_conf_hat), axis=(1, 2, 3))
-    # [None, 13, 13, 1] -> [None]
-    loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(box_conf - box_conf_hat),
-                                      axis=(1, 2, 3))
-    loss_conf = K.mean(loss_conf)
-    # [None, 13, 13, 80] -> [None]
-    loss_class = K.sum(coord_mask * K.square(classes - classes_hat), axis=(1, 2, 3))
-    loss_class = K.mean(loss_class)
-    total_loss = loss_xy + loss_wh + loss_conf + loss_class
-    return total_loss
+    loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + 1e-6) / 2.
+    loss_wh = tf.reduce_sum(tf.square(box_wh - box_wh_hat) * coord_mask) / (nb_coord_box + 1e-6) / 2.
+    loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + 1e-6) / 2.
+    loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=box_class, logits=box_class_hat)
+    loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
+
+    loss = loss_xy + loss_wh + loss_conf + loss_class
+
+    nb_true_box = tf.reduce_sum(y_true[..., 4])
+    nb_pred_box = tf.reduce_sum(tf.to_float(box_conf > 0.5) * tf.to_float(box_conf_hat > 0.3))
+
+    """
+    Debugging code
+    """
+    current_recall = nb_pred_box / (nb_true_box + 1e-6)
+
+    loss = tf.Print(loss, [tf.zeros((1))], message='Dummy Line \t', summarize=1000)
+    loss = tf.Print(loss, [loss_xy], message='Loss XY \t', summarize=1000)
+    loss = tf.Print(loss, [loss_wh], message='Loss WH \t', summarize=1000)
+    loss = tf.Print(loss, [loss_conf], message='Loss Conf \t', summarize=1000)
+    loss = tf.Print(loss, [loss_class], message='Loss Class \t', summarize=1000)
+    loss = tf.Print(loss, [loss], message='Total Loss \t', summarize=1000)
+    loss = tf.Print(loss, [current_recall], message='Current Recall \t', summarize=1000)
+
+    return loss
 
 
 def ensure_folder(folder):
@@ -133,14 +142,14 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """
 
     # Step 1: Compute box scores
-    box_scores = box_confidence * box_class_probs   # [14, 14, 80]
+    box_scores = box_confidence * box_class_probs  # [14, 14, 80]
     print('box_scores.shape: ' + str(box_scores.shape))
 
     # Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
-    box_classes = np.argmax(box_scores, axis=-1)    # [14, 14]
+    box_classes = np.argmax(box_scores, axis=-1)  # [14, 14]
     box_classes = np.expand_dims(box_classes, axis=-1)  # [14, 14, 1]
     print('box_classes.shape: ' + str(box_classes.shape))
-    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)   # [14, 14, 1]
+    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)  # [14, 14, 1]
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
     print('np.mean(box_class_scores): ' + str(np.mean(box_class_scores)))
     print('np.max(box_class_scores): ' + str(np.max(box_class_scores)))
@@ -154,10 +163,10 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 
     # Step 4: Apply the mask to scores, boxes and classes
     scores = box_class_scores[filtering_mask]
-    print('scores.shape: ' + str(scores.shape))             # [num_remain]
-    boxes = boxes[np.repeat(filtering_mask, 4, axis=2)]     # [num_remain x 4]
+    print('scores.shape: ' + str(scores.shape))  # [num_remain]
+    boxes = boxes[np.repeat(filtering_mask, 4, axis=2)]  # [num_remain x 4]
     print('boxes.shape: ' + str(boxes.shape))
-    classes = box_classes[filtering_mask]                   # [num_remain]
+    classes = box_classes[filtering_mask]  # [num_remain]
     print('classes.shape: ' + str(classes.shape))
 
     return scores, boxes, classes
