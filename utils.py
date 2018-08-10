@@ -22,15 +22,24 @@ def yolo_loss(y_true, y_pred):
     wh_hat = y_pred[..., 3:5]               # [None, 13, 13, 2]
     classes = y_true[..., 5:]               # [None, 13, 13, 80]
     classes_hat = y_pred[..., 5:]           # [None, 13, 13, 80]
-    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))  # [None, 13, 13, 2] -> [None]
+
+    # [None, 13, 13, 2] -> [None]
+    loss_xy = lambda_coord * K.sum(obj_i_mask * K.square(xy - xy_hat), axis=(1, 2, 3))
+    loss_xy = K.mean(loss_xy)
+    # [None, 13, 13, 2] -> [None]
     loss_wh = lambda_coord * K.sum(obj_i_mask * K.square(K.sqrt(wh) - K.sqrt(wh_hat)),
-                                   axis=(1, 2, 3))  # [None, 13, 13, 2] -> [None]
-    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))  # [None, 13, 13, 1] -> [None]
+                                   axis=(1, 2, 3))
+    loss_wh = K.mean(loss_wh)
+    # [None, 13, 13, 1] -> [None]
+    loss_conf = K.sum(obj_i_mask * K.square(conf - conf_hat), axis=(1, 2, 3))
+    # [None, 13, 13, 1] -> [None]
     loss_conf += lambda_noobj * K.sum(noobj_i_mask * K.square(conf - conf_hat),
-                                      axis=(1, 2, 3))  # [None, 13, 13, 1] -> [None]
-    loss_class = K.sum(obj_i_mask * K.square(classes - classes_hat), axis=(1, 2, 3))  # [None, 13, 13, 80] -> [None]
-    total_loss = K.mean(loss_xy + loss_wh + loss_conf + loss_class)
-    return total_loss
+                                      axis=(1, 2, 3))
+    loss_conf = K.mean(loss_conf)
+    # [None, 13, 13, 80] -> [None]
+    loss_class = K.sum(obj_i_mask * K.square(classes - classes_hat), axis=(1, 2, 3))
+    # total_loss = loss_xy + loss_wh + loss_conf + loss_class
+    return loss_xy, loss_wh, loss_conf, loss_class
 
 
 def ensure_folder(folder):
