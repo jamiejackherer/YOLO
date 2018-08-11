@@ -245,7 +245,7 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
     classes = K.gather(classes, nms_indices)
     ### END CODE HERE ###
 
-    return scores, boxes, classes
+    return K.eval(scores), K.eval(boxes), K.eval(classes)
 
 
 def draw_str(dst, target, s):
