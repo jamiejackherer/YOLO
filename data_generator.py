@@ -73,8 +73,9 @@ class DataGenSequence(Sequence):
             filename = os.path.join(self.image_folder, file_name)
             image_bgr = cv.imread(filename)
             image_bgr = cv.resize(image_bgr, (image_size, image_size), cv.INTER_CUBIC)
+            image_rgb = image_bgr[:, :, ::-1]
 
-            batch_x[i_batch, :, :] = image_bgr / 255.
+            batch_x[i_batch, :, :] = image_rgb / 255.
             batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
 
         return batch_x, batch_y

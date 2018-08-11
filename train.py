@@ -8,7 +8,8 @@ from keras.utils import multi_gpu_model
 from config import patience, num_epochs, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
-from utils import get_example_numbers, get_available_gpus, ensure_folder, yolo_loss
+from utils import get_example_numbers, get_available_gpus, ensure_folder
+from yolo_utils import yolo_loss
 
 if __name__ == '__main__':
     # Parse arguments
