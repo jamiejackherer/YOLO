@@ -61,7 +61,7 @@ def load_weights(model, weight_file):
     weight_reader = WeightReader(weight_file)
 
     weight_reader.reset()
-    nb_conv = 22
+    nb_conv = 23
 
     for i in range(1, nb_conv + 1):
         conv_layer = model.get_layer('conv_' + str(i))
@@ -90,7 +90,7 @@ def load_weights(model, weight_file):
             kernel = kernel.transpose([2, 3, 1, 0])
             conv_layer.set_weights([kernel])
 
-    layer = model.layers[-4]  # the last convolutional layer
+    layer = model.layers[-2]  # the last convolutional layer
     weights = layer.get_weights()
 
     new_kernel = np.random.normal(size=weights[0].shape) / (grid_h * grid_w)
