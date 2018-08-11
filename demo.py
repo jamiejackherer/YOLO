@@ -18,7 +18,7 @@ if __name__ == '__main__':
     test_path = valid_image_folder
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
-    num_samples = 10
+    num_samples = 20
     #random.seed(1)
     samples = random.sample(test_images, num_samples)
 
