@@ -8,7 +8,9 @@ from pycocotools.coco import COCO
 from config import batch_size, image_h, image_w, grid_h, grid_w, num_classes, num_channels, num_box, grid_size, \
     train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx, anchors
 from utils import BoundBox, bbox_iou
-_anchors = [BoundBox(0, 0, anchors[2*i], anchors[2*i+1]) for i in range(int(len(anchors)//2))]
+
+_anchors = [BoundBox(0, 0, anchors[2 * i], anchors[2 * i + 1]) for i in range(int(len(anchors) // 2))]
+
 
 def get_ground_truth(coco, imgId):
     gt = np.zeros((grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
@@ -71,16 +73,17 @@ class DataGenSequence(Sequence):
 
         self.coco = COCO(annot_file)
         self.imgIds = self.coco.getImgIds()
+        self.num_samples = len(self.imgIds)
 
         np.random.shuffle(self.imgIds)
 
     def __len__(self):
-        return int(np.ceil(len(self.imgIds) / float(batch_size)))
+        return int(np.ceil(self.num_samples / float(batch_size)))
 
     def __getitem__(self, idx):
         i = idx * batch_size
 
-        length = min(batch_size, (len(self.imgIds) - i))
+        length = min(batch_size, (self.num_samples - i))
         batch_x = np.empty((length, image_h, image_w, num_channels), dtype=np.float32)
         batch_y = np.empty((length, grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
 
@@ -90,7 +93,7 @@ class DataGenSequence(Sequence):
             file_name = img['file_name']
             filename = os.path.join(self.image_folder, file_name)
             image_bgr = cv.imread(filename)
-            image_bgr = cv.resize(image_bgr, (image_h, image_w), cv.INTER_CUBIC)
+            image_bgr = cv.resize(image_bgr, (image_h, image_w))
             image_rgb = image_bgr[:, :, ::-1]
 
             batch_x[i_batch, :, :] = image_rgb / 255.
