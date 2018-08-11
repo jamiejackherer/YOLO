@@ -58,7 +58,7 @@ class WeightReader:
 
 
 def load_weights(model, weight_file):
-    weight_reader = WeightReader(wt_path)
+    weight_reader = WeightReader(weight_file)
 
     weight_reader.reset()
     nb_conv = 23
