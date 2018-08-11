@@ -1,14 +1,14 @@
 # import the necessary packages
 import os
 import random
-import tensorflow as tf
+
 import cv2 as cv
 import keras.backend as K
 import numpy as np
 
-from config import image_size, valid_image_folder, best_model, labels, iou_threshold, score_threshold, max_output_size
+from config import image_size, valid_image_folder, best_model, labels, iou_threshold, score_threshold, max_boxes
 from model import build_model
-from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str
+from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str, yolo_non_max_suppression
 
 if __name__ == '__main__':
     model = build_model()
@@ -59,18 +59,14 @@ if __name__ == '__main__':
         boxes = np.reshape(boxes, (-1, 4))
         print('boxes after reshape: ' + str(boxes))
 
-        selected_indices = tf.image.non_max_suppression(boxes, scores, max_output_size, iou_threshold, score_threshold)
-
-        boxes = boxes[selected_indices]
-        scores = boxes[scores]
-        classes = classes[selected_indices]
+        scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes, max_boxes, iou_threshold)
 
         for j, cls in enumerate(classes):
             box = boxes[j]
             label = labels[cls]
             score = scores[j]
             print(label)
-            text = '{}, score: {}'.format(label, score)
+            text = '{} {}'.format(label, score)
             x_min, y_min, x_max, y_max = box
             print('x_min={}, y_min={}, x_max={}, y_max={}'.format(x_min, y_min, x_max, y_max))
             cv.rectangle(image_bgr, (int(x_min), int(y_min)), (int(x_max), int(y_max)), (255, 0, 0))

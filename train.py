@@ -51,7 +51,7 @@ if __name__ == '__main__':
         if pretrained_path is not None:
             new_model.load_weights(pretrained_path, by_name=True)
 
-    adam = keras.optimizers.Adam(clipvalue=5.)
+    adam = keras.optimizers.Adam(lr=0.5e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0, clipvalue=5.)
     new_model.compile(optimizer=adam, loss=yolo_loss)
 
     print(new_model.summary())

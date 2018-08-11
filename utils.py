@@ -131,9 +131,9 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """Filters YOLO boxes by thresholding on object and class confidence.
 
     Arguments:
-    box_confidence -- tensor of shape (14, 14, 1)
-    boxes -- tensor of shape (14, 14, 4)
-    box_class_probs -- tensor of shape (14, 14, 80)
+    box_confidence -- tensor of shape (13, 13, 1)
+    boxes -- tensor of shape (13, 13, 4)
+    box_class_probs -- tensor of shape (13, 13, 80)
     threshold -- real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 
     Returns:
@@ -146,14 +146,14 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
     """
 
     # Step 1: Compute box scores
-    box_scores = box_confidence * box_class_probs  # [14, 14, 80]
+    box_scores = box_confidence * box_class_probs  # [13, 13, 80]
     print('box_scores.shape: ' + str(box_scores.shape))
 
     # Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
-    box_classes = np.argmax(box_scores, axis=-1)  # [14, 14]
-    box_classes = np.expand_dims(box_classes, axis=-1)  # [14, 14, 1]
+    box_classes = np.argmax(box_scores, axis=-1)  # [13, 13]
+    box_classes = np.expand_dims(box_classes, axis=-1)  # [13, 13, 1]
     print('box_classes.shape: ' + str(box_classes.shape))
-    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)  # [14, 14, 1]
+    box_class_scores = np.max(box_scores, axis=-1, keepdims=True)  # [13, 13, 1]
     print('box_class_scores.shape: ' + str(box_class_scores.shape))
     print('np.mean(box_class_scores): ' + str(np.mean(box_class_scores)))
     print('np.max(box_class_scores): ' + str(np.max(box_class_scores)))
@@ -161,7 +161,7 @@ def filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 
     # Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
     # same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
-    filtering_mask = box_class_scores >= threshold  # [14, 14, 1]
+    filtering_mask = box_class_scores >= threshold  # [13, 13, 1]
     # print('filtering_mask: ' + str(filtering_mask))
     print('filtering_mask.shape: ' + str(filtering_mask.shape))
 
@@ -208,6 +208,44 @@ def scale_box_xy(box_xy):
             result[cell_y, cell_x, 0] = temp_x
             result[cell_y, cell_x, 1] = temp_y
     return result
+
+
+def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold=0.5):
+    """
+    Applies Non-max suppression (NMS) to set of boxes
+
+    Arguments:
+    scores -- tensor of shape (None,), output of yolo_filter_boxes()
+    boxes -- tensor of shape (None, 4), output of yolo_filter_boxes() that have been scaled to the image size (see later)
+    classes -- tensor of shape (None,), output of yolo_filter_boxes()
+    max_boxes -- integer, maximum number of predicted boxes you'd like
+    iou_threshold -- real value, "intersection over union" threshold used for NMS filtering
+
+    Returns:
+    scores -- tensor of shape (, None), predicted score for each box
+    boxes -- tensor of shape (4, None), predicted box coordinates
+    classes -- tensor of shape (, None), predicted class for each box
+
+    Note: The "None" dimension of the output tensors has obviously to be less than max_boxes. Note also that this
+    function will transpose the shapes of scores, boxes, classes. This is made for convenience.
+    """
+
+    max_boxes_tensor = K.variable(max_boxes, dtype='int32')  # tensor to be used in tf.image.non_max_suppression()
+    K.get_session().run(tf.variables_initializer([max_boxes_tensor]))  # initialize variable max_boxes_tensor
+
+    # Use tf.image.non_max_suppression() to get the list of indices corresponding to boxes you keep
+    ### START CODE HERE ### (≈ 1 line)
+    nms_indices = tf.image.non_max_suppression(boxes, scores, max_boxes, iou_threshold)
+    ### END CODE HERE ###
+
+    # Use K.gather() to select only nms_indices from scores, boxes and classes
+    ### START CODE HERE ### (≈ 3 lines)
+    scores = K.gather(scores, nms_indices)
+    boxes = K.gather(boxes, nms_indices)
+    classes = K.gather(classes, nms_indices)
+    ### END CODE HERE ###
+
+    return scores, boxes, classes
 
 
 def draw_str(dst, target, s):

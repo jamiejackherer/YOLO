@@ -16,6 +16,7 @@ def normalize(x):
     return K.concatenate([pc_bxy_bwh, classes])
 
 
+# Darknet-19
 def build_model():
     input_image = Input(shape=(image_size, image_size, 3))
     # Layer 1	    input_image = base_model.input
