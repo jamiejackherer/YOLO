@@ -76,7 +76,7 @@ def load_weights(model, weight_file):
             mean = weight_reader.read_bytes(size)
             var = weight_reader.read_bytes(size)
 
-            weights = norm_layer.set_weights([gamma, beta, mean, var])
+            norm_layer.set_weights([gamma, beta, mean, var])
 
         if len(conv_layer.get_weights()) > 1:
             bias = weight_reader.read_bytes(np.prod(conv_layer.get_weights()[1].shape))
