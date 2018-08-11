@@ -37,7 +37,7 @@ verbose = 1
 batch_size = 32
 num_epochs = 1000
 patience = 50
-best_model = 'model.08-1.1503.hdf5'
+best_model = 'model.01-0.8759.hdf5'
 
 lambda_coord = 1.0
 lambda_obj = 5.0
