@@ -2,26 +2,39 @@ import keras.backend as K
 import numpy as np
 import tensorflow as tf
 
-from config import image_size, num_grid, grid_size, class_weights
+from config import image_size, grid_h, grid_w, grid_size, class_weights, anchors, batch_size, num_box, epsilon
 from config import lambda_coord, lambda_noobj, lambda_class, lambda_obj
 
 
 def yolo_loss(y_true, y_pred):
-    # [None, 13, 13, 1]
+    mask_shape = tf.shape(y_true)[:4]
+
+    cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
+    cell_y = tf.transpose(cell_x, (0, 2, 1, 3, 4))
+
+    cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
+
+    conf_mask = tf.zeros(mask_shape)
+    class_mask = tf.zeros(mask_shape)
+
+    seen = tf.Variable(0.)
+    total_recall = tf.Variable(0.)
+
+    # [None, 13, 13, 5, 1]
     box_conf = K.expand_dims(y_true[..., 0], axis=-1)
-    # [None, 13, 13, 2]
-    box_xy = y_true[..., 1:3]
-    # [None, 13, 13, 2]
-    box_wh = y_true[..., 3:5]
+    # [None, 13, 13, 5, 2]
+    box_xy = tf.sigmoid(y_true[..., 1:3]) + cell_grid
+    # [None, 13, 13, 5, 2]
+    box_wh = tf.exp(y_true[..., 3:5]) * np.reshape(anchors, [1, 1, 1, num_box, 2])
     box_wh_half = box_wh / 2.
     box_mins = box_xy - box_wh_half
     box_maxes = box_xy + box_wh_half
 
-    # [None, 13, 13, 1]
+    # [None, 13, 13, 5, 1]
     box_conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)
-    # [None, 13, 13, 2]
+    # [None, 13, 13, 5, 2]
     box_xy_hat = y_pred[..., 1:3]
-    # [None, 13, 13, 2]
+    # [None, 13, 13, 5, 2]
     box_wh_hat = y_pred[..., 3:5]
     box_wh_half_hat = box_wh_hat / 2.
     box_mins_hat = box_xy_hat - box_wh_half_hat
@@ -32,39 +45,38 @@ def yolo_loss(y_true, y_pred):
     intersect_wh = tf.maximum(intersect_maxes - intersect_mins, 0.)
     intersect_areas = intersect_wh[..., 0] * intersect_wh[..., 1]
 
-    # [None, 13, 13]
+    # [None, 13, 13, 5]
     true_areas = box_wh[..., 0] * box_wh[..., 1]
     pred_areas = box_wh_hat[..., 0] * box_wh_hat[..., 1]
 
-    union_areas = pred_areas + true_areas - intersect_areas + 1e-6
-    iou_scores = tf.truediv(intersect_areas, union_areas)
+    union_areas = pred_areas + true_areas - intersect_areas
+    iou_scores = tf.truediv(intersect_areas, union_areas + 1e-6)
     iou_scores = K.expand_dims(iou_scores, axis=-1)
 
     box_conf = iou_scores * box_conf
-    # [None, 13, 13, 80]
+    # [None, 13, 13, 5, 80]
     box_class = tf.argmax(y_true[..., 5:], -1)
-    # [None, 13, 13, 80]
+    # [None, 13, 13, 5, 80]
     box_class_hat = y_pred[..., 5:]
 
     # the position of the ground truth boxes (the predictors)
-    # [None, 13, 13, 1]
+    # [None, 13, 13, 5, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
-    best_ious = iou_scores
+    best_ious = tf.reduce_max(iou_scores, axis=4)
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - coord_mask) * lambda_noobj
     conf_mask = conf_mask + coord_mask * lambda_obj
-    # [None, 13, 13]
+    # [None, 13, 13, 5]
     class_mask = y_true[..., 0] * tf.gather(class_weights, box_class) * lambda_class
 
     nb_coord_box = tf.reduce_sum(tf.to_float(coord_mask > 0.0))
     nb_conf_box = tf.reduce_sum(tf.to_float(conf_mask > 0.0))
     nb_class_box = tf.reduce_sum(tf.to_float(class_mask > 0.0))
 
-    loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + 1e-6)
-    loss_wh = tf.reduce_sum(tf.square(tf.sqrt(tf.abs(box_wh)) - tf.sqrt(tf.abs(box_wh_hat))) * coord_mask) / (
-            nb_coord_box + 1e-6)
-    loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + 1e-6)
+    loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + epsilon) / 2.
+    loss_wh = tf.reduce_sum(tf.square(box_wh - box_wh_hat) * coord_mask) / (nb_coord_box + epsilon) / 2.
+    loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + epsilon) / 2.
     loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=box_class, logits=box_class_hat)
-    loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + 1e-6)
+    loss_class = tf.reduce_sum(loss_class * class_mask) / (nb_class_box + epsilon)
 
     loss = loss_xy + loss_wh + loss_conf + loss_class
 
@@ -159,8 +171,8 @@ def yolo_boxes_to_corners(box_xy, box_wh):
 def yolo_scale_box_xy(box_xy):
     result = np.zeros_like(box_xy)
     # shape = 14, 14, 2
-    for cell_y in range(num_grid):
-        for cell_x in range(num_grid):
+    for cell_y in range(grid_h):
+        for cell_x in range(grid_w):
             bx = box_xy[cell_y, cell_x, 0]
             by = box_xy[cell_y, cell_x, 1]
             temp_x = (cell_x + bx) * grid_size

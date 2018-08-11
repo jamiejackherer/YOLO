@@ -1,13 +1,15 @@
 import numpy as np
 
-image_size = 416
+image_h = image_w = image_size = 416
+grid_h = grid_w = 13
 num_channels = 3
 grid_size = 32
-num_grid = image_size // grid_size # 13
-num_box = 1
+num_box = 5
+epsilon = 1e-6
 
 score_threshold = 0.3  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 iou_threshold = 0.3  # real value, "intersection over union" threshold used for NMS filtering
+anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',

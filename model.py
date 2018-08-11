@@ -4,8 +4,8 @@ from keras.layers import Conv2D, BatchNormalization, LeakyReLU, MaxPooling2D, Re
 from keras.layers.merge import concatenate
 from keras.models import Model
 
-from config import image_size, num_classes, num_box, num_grid
-from utils import space_to_depth_x2
+from config import image_size, num_classes, num_box, grid_h, grid_w
+from utils import space_to_depth_x2, load_weights
 
 
 def normalize(x):
@@ -117,9 +117,9 @@ def build_model():
     x = LeakyReLU(alpha=0.1)(x)
     # Layer 23	    # Layer 23
     x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
-    x = Reshape((num_grid, num_grid, 4 + 1 + num_classes))(x)
-    output = Lambda(normalize, name='normalize')(x)
+    output = Reshape((grid_h, grid_w, num_box, 4 + 1 + num_classes))(x)
     model = Model(input_image, output)
+    load_weights(model, 'data/yolo.weights')
     return model
 
 
