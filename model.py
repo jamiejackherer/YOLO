@@ -1,5 +1,4 @@
 import keras.backend as K
-import tensorflow as tf
 from keras.layers import Conv2D, BatchNormalization, LeakyReLU, MaxPooling2D, Reshape, Input, Lambda
 from keras.layers.merge import concatenate
 from keras.models import Model
@@ -8,17 +7,9 @@ from config import image_size, num_classes, num_box, grid_h, grid_w
 from utils import space_to_depth_x2, load_weights
 
 
-def normalize(x):
-    pc_bxy_bwh = x[..., 0:5]
-    pc_bxy_bwh = tf.sigmoid(pc_bxy_bwh)
-    classes = x[..., 5:]
-    classes = tf.nn.softmax(classes)
-    return K.concatenate([pc_bxy_bwh, classes])
-
-
 def build_model():
     input_image = Input(shape=(image_size, image_size, 3))
-    # Layer 1	    input_image = base_model.input
+    # Layer 1
     x = Conv2D(32, (3, 3), strides=(1, 1), padding='same', name='conv_1', use_bias=False)(input_image)
     x = BatchNormalization(name='norm_1')(x)
     x = LeakyReLU(alpha=0.1)(x)
