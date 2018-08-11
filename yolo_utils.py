@@ -127,7 +127,7 @@ def yolo_loss(y_true, y_pred):
     Debugging code
     """
     current_recall = nb_pred_box / (nb_true_box + 1e-6)
-    total_recall = tf.assign_add(total_recall, current_recall)
+    # total_recall = tf.assign_add(total_recall, current_recall)
 
     loss = tf.Print(loss, [tf.zeros((1))], first_n=10, message='Dummy Line \t', summarize=1000)
     loss = tf.Print(loss, [loss_xy], first_n=10, message='Loss XY \t', summarize=1000)
@@ -136,7 +136,7 @@ def yolo_loss(y_true, y_pred):
     loss = tf.Print(loss, [loss_class], first_n=10, message='Loss Class \t', summarize=1000)
     loss = tf.Print(loss, [loss], first_n=10, message='Total Loss \t', summarize=1000)
     loss = tf.Print(loss, [current_recall], first_n=10, message='Current Recall \t', summarize=1000)
-    loss = tf.Print(loss, [total_recall / seen], message='Average Recall \t', summarize=1000)
+    # loss = tf.Print(loss, [total_recall / seen], first_n=10, message='Average Recall \t', summarize=1000)
 
     return loss
 
