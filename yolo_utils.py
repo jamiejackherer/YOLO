@@ -9,11 +9,12 @@ from config import lambda_coord, lambda_noobj, lambda_class, lambda_obj
 def yolo_loss(y_true, y_pred):
     # [None, 13, 13, 5]
     mask_shape = tf.shape(y_true)[:4]
+    length = mask_shape[0]
 
     cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
     cell_y = tf.transpose(cell_x, (0, 2, 1, 3, 4))
 
-    cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
+    cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [length, 1, 1, 5, 1])
 
     # [None, 13, 13, 5]
     coord_mask = tf.zeros(mask_shape)
