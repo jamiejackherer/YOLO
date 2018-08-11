@@ -1,6 +1,6 @@
 ## YOLO
 
-CVPR2016 目标检测论文 [YOLO: Unified, Real-Time Object Detection](https://arxiv.org/abs/1506.02640) 的 Keras 实现。
+YOLOv2 [YOLO9000: Better, Faster, Stronger](https://arxiv.org/abs/1612.08242) 的 Keras 实现。
 
 ## 依赖项
 
@@ -11,7 +11,7 @@ CVPR2016 目标检测论文 [YOLO: Unified, Real-Time Object Detection](https://
 
 ## 数据集
 
-我使用了 MSCOCO 2017 数据集，请按照[说明](http://cocodataset.org/#download) 下载 train2017.zip, val2017.zip, annotations_trainval2017.zip 放入 data 目录。
+MSCOCO 2017 数据集，请按照[说明](http://cocodataset.org/#download) 下载 train2017.zip, val2017.zip, annotations_trainval2017.zip 放入 data 目录。
 
 ```bash
 $ wget http://images.cocodataset.org/zips/train2017.zip && wget http://images.cocodataset.org/zips/val2017.zip && wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
