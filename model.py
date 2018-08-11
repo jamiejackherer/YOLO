@@ -119,7 +119,7 @@ def build_model():
     x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
     output = Reshape((grid_h, grid_w, num_box, 4 + 1 + num_classes))(x)
     model = Model(input_image, output)
-    load_weights(model, 'data/yolo.weights')
+    load_weights(model, 'models/yolo.weights')
     return model
 
 
