@@ -59,8 +59,8 @@ def yolo_loss(y_true, y_pred):
     # [None, 13, 13, 5, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
     best_ious = tf.reduce_max(iou_scores, axis=-1)
-    conf_mask = tf.to_float(best_ious < 0.6) * (1 - coord_mask) * lambda_noobj
-    conf_mask = conf_mask + coord_mask * lambda_obj
+    conf_mask = tf.to_float(best_ious < 0.6) * (1 - y_true[..., 0]) * lambda_noobj
+    conf_mask = conf_mask + y_true[..., 0] * lambda_obj
     # [None, 13, 13, 5]
     class_mask = y_true[..., 0] * tf.gather(class_weights, box_class) * lambda_class
 
