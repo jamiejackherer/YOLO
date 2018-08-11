@@ -19,7 +19,7 @@ if __name__ == '__main__':
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
     num_samples = 1
-    # random.seed(1)
+    random.seed(1)
     samples = random.sample(test_images, num_samples)
 
     ensure_folder('images')
