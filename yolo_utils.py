@@ -7,35 +7,30 @@ from config import lambda_coord, lambda_noobj, lambda_class, lambda_obj
 
 
 def yolo_loss(y_true, y_pred):
-    mask_shape = tf.shape(y_true)[:4]
-
     cell_x = tf.to_float(tf.reshape(tf.tile(tf.range(grid_w), [grid_h]), (1, grid_h, grid_w, 1, 1)))
     cell_y = tf.transpose(cell_x, (0, 2, 1, 3, 4))
 
     cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 5, 1])
 
-    conf_mask = tf.zeros(mask_shape)
-    class_mask = tf.zeros(mask_shape)
-
     seen = tf.Variable(0.)
     total_recall = tf.Variable(0.)
 
     # [None, 13, 13, 5, 1]
-    box_conf = K.expand_dims(y_true[..., 0], axis=-1)
+    box_conf = y_true[..., 0]
     # [None, 13, 13, 5, 2]
-    box_xy = tf.sigmoid(y_true[..., 1:3]) + cell_grid
+    box_xy = y_true[..., 1:3]
     # [None, 13, 13, 5, 2]
-    box_wh = tf.exp(y_true[..., 3:5]) * np.reshape(anchors, [1, 1, 1, num_box, 2])
+    box_wh = y_true[..., 3:5]
     box_wh_half = box_wh / 2.
     box_mins = box_xy - box_wh_half
     box_maxes = box_xy + box_wh_half
 
     # [None, 13, 13, 5, 1]
-    box_conf_hat = K.expand_dims(y_pred[..., 0], axis=-1)
+    box_conf_hat = tf.sigmoid(y_pred[..., 0])
     # [None, 13, 13, 5, 2]
-    box_xy_hat = y_pred[..., 1:3]
+    box_xy_hat = tf.sigmoid(y_pred[..., 1:3]) + cell_grid
     # [None, 13, 13, 5, 2]
-    box_wh_hat = y_pred[..., 3:5]
+    box_wh_hat = tf.exp(y_pred[..., 3:5]) * np.reshape(anchors, [1, 1, 1, num_box, 2])
     box_wh_half_hat = box_wh_hat / 2.
     box_mins_hat = box_xy_hat - box_wh_half_hat
     box_maxes_hat = box_xy_hat + box_wh_half_hat
@@ -59,10 +54,11 @@ def yolo_loss(y_true, y_pred):
     # [None, 13, 13, 5, 80]
     box_class_hat = y_pred[..., 5:]
 
+
     # the position of the ground truth boxes (the predictors)
     # [None, 13, 13, 5, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
-    best_ious = tf.reduce_max(iou_scores, axis=4)
+    best_ious = tf.reduce_max(iou_scores, axis=-1)
     conf_mask = tf.to_float(best_ious < 0.6) * (1 - coord_mask) * lambda_noobj
     conf_mask = conf_mask + coord_mask * lambda_obj
     # [None, 13, 13, 5]
@@ -87,6 +83,7 @@ def yolo_loss(y_true, y_pred):
     Debugging code
     """
     current_recall = nb_pred_box / (nb_true_box + 1e-6)
+    total_recall = tf.assign_add(total_recall, current_recall)
 
     loss = tf.Print(loss, [tf.zeros((1))], first_n=10, message='Dummy Line \t', summarize=1000)
     loss = tf.Print(loss, [loss_xy], first_n=10, message='Loss XY \t', summarize=1000)
@@ -95,6 +92,7 @@ def yolo_loss(y_true, y_pred):
     loss = tf.Print(loss, [loss_class], first_n=10, message='Loss Class \t', summarize=1000)
     loss = tf.Print(loss, [loss], first_n=10, message='Total Loss \t', summarize=1000)
     loss = tf.Print(loss, [current_recall], first_n=10, message='Current Recall \t', summarize=1000)
+    loss = tf.Print(loss, [total_recall / seen], message='Average Recall \t', summarize=1000)
 
     return loss
 
