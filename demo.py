@@ -1,12 +1,12 @@
 # import the necessary packages
 import os
 import random
-
+import tensorflow as tf
 import cv2 as cv
 import keras.backend as K
 import numpy as np
 
-from config import image_size, valid_image_folder, best_model, labels, grid_size, score_threshold
+from config import image_size, valid_image_folder, best_model, labels, iou_threshold, score_threshold, max_output_size
 from model import build_model
 from utils import ensure_folder, filter_boxes, yolo_boxes_to_corners, scale_box_xy, draw_str
 
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     test_images = [f for f in os.listdir(test_path) if
                    os.path.isfile(os.path.join(test_path, f)) and f.endswith('.jpg')]
     num_samples = 20
-    #random.seed(1)
+    # random.seed(1)
     samples = random.sample(test_images, num_samples)
 
     ensure_folder('images')
@@ -58,6 +58,12 @@ if __name__ == '__main__':
         print('classes: ' + str(classes))
         boxes = np.reshape(boxes, (-1, 4))
         print('boxes after reshape: ' + str(boxes))
+
+        selected_indices = tf.image.non_max_suppression(boxes, scores, max_output_size, iou_threshold, score_threshold)
+
+        boxes = boxes[selected_indices]
+        scores = boxes[scores]
+        classes = classes[selected_indices]
 
         for j, cls in enumerate(classes):
             box = boxes[j]

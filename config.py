@@ -8,6 +8,7 @@ num_box = 1
 
 score_threshold = 0.2  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 iou_threshold = 0.5  # real value, "intersection over union" threshold used for NMS filtering
+max_output_size = 10
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
           'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
