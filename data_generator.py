@@ -82,7 +82,7 @@ class DataGenSequence(Sequence):
 
         length = min(batch_size, (len(self.imgIds) - i))
         batch_x = np.empty((length, image_h, image_w, num_channels), dtype=np.float32)
-        batch_y = np.empty((length, grid_h, grid_w, 4 + 1 + num_classes), dtype=np.float32)
+        batch_y = np.empty((length, grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
 
         for i_batch in range(length):
             imgId = self.imgIds[i + i_batch]
