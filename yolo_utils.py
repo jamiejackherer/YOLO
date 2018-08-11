@@ -26,12 +26,19 @@ def yolo_loss(y_true, y_pred):
     """
     Adjust ground truth
     """
+    # adjust confidence
     # [None, 13, 13, 5]
     box_conf = y_true[..., 0]
+    # adjust x and y
     # [None, 13, 13, 5, 2]
-    box_xy = y_true[..., 1:3]
+    box_xy = y_true[..., 1:3]   # relative position to the containing cell
+    # adjust w and h
     # [None, 13, 13, 5, 2]
-    box_wh = y_true[..., 3:5]
+    box_wh = y_true[..., 3:5]   # number of cells across, horizontally and vertically
+    # adjust class probabilities
+    # [None, 13, 13, 5]
+    box_class = tf.argmax(y_true[..., 5:], -1)
+
     box_wh_half = box_wh / 2.
     box_mins = box_xy - box_wh_half
     box_maxes = box_xy + box_wh_half
@@ -48,9 +55,14 @@ def yolo_loss(y_true, y_pred):
     # adjust w and h
     # [None, 13, 13, 5, 2]
     box_wh_hat = tf.exp(y_pred[..., 3:5]) * np.reshape(anchors, [1, 1, 1, num_box, 2])
+    # adjust class probabilities
+    # [None, 13, 13, 5, 80]
+    box_class_hat = y_pred[..., 5:]
+
     box_wh_half_hat = box_wh_hat / 2.
     box_mins_hat = box_xy_hat - box_wh_half_hat
     box_maxes_hat = box_xy_hat + box_wh_half_hat
+
 
     # [None, 13, 13, 5, 2]
     intersect_mins = tf.maximum(box_mins_hat, box_mins)
@@ -68,11 +80,7 @@ def yolo_loss(y_true, y_pred):
 
     # [None, 13, 13, 5]
     box_conf = iou_scores * box_conf
-    # adjust class probabilities
-    # [None, 13, 13, 5]
-    box_class = tf.argmax(y_true[..., 5:], -1)
-    # [None, 13, 13, 5, 80]
-    box_class_hat = y_pred[..., 5:]
+
 
     """
         Determine the masks
@@ -80,14 +88,14 @@ def yolo_loss(y_true, y_pred):
     # the position of the ground truth boxes (the predictors)
     # [None, 13, 13, 5, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
-    # [None, 13, 13]
-    best_ious = tf.reduce_max(iou_scores, axis=4)
+    # [None, 13, 13, 5]
+    best_ious = iou_scores
 
     """
         confidence mask: penelize predictors + penalize boxes with low IOU
         penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
     """
-    # [None, 13, 13]
+    # [None, 13, 13, 5]
     conf_mask = conf_mask + tf.to_float(best_ious < 0.6) * (1 - y_true[..., 0]) * lambda_noobj
     # penalize the confidence of the boxes, which are responsible for corresponding ground truth box
     conf_mask = conf_mask + y_true[..., 0] * lambda_obj
@@ -103,7 +111,7 @@ def yolo_loss(y_true, y_pred):
     loss_xy = tf.reduce_sum(tf.square(box_xy - box_xy_hat) * coord_mask) / (nb_coord_box + epsilon) / 2.
     # [None, 13, 13, 5, 2]
     loss_wh = tf.reduce_sum(tf.square(box_wh - box_wh_hat) * coord_mask) / (nb_coord_box + epsilon) / 2.
-
+    # [None, 13, 13, 5]
     loss_conf = tf.reduce_sum(tf.square(box_conf - box_conf_hat) * conf_mask) / (nb_conf_box + epsilon) / 2.
     # [None, 13, 13, 5]
     loss_class = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=box_class, logits=box_class_hat)
