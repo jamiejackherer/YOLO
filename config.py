@@ -4,7 +4,7 @@ image_size = 416
 num_channels = 3
 grid_size = 32
 num_grid = image_size // grid_size # 13
-num_box = 5
+num_box = 1
 
 score_threshold = 0.3  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 iou_threshold = 0.3  # real value, "intersection over union" threshold used for NMS filtering
