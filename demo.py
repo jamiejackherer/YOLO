@@ -8,9 +8,7 @@ import numpy as np
 
 from config import image_size, valid_image_folder, best_model, labels, anchors, num_classes
 from model import build_model
-from utils import ensure_folder, decode_netout, BoundBox, draw_boxes
-
-_anchors = [BoundBox(0, 0, anchors[2 * i], anchors[2 * i + 1]) for i in range(int(len(anchors) // 2))]
+from utils import ensure_folder, decode_netout, draw_boxes
 
 if __name__ == '__main__':
     model = build_model()
@@ -38,7 +36,7 @@ if __name__ == '__main__':
         image_input = np.expand_dims(image_rgb, 0).astype(np.float32)
         # [1, 13, 13, 5, 85]
         netout = model.predict(image_input)[0]
-        boxes = decode_netout(netout, _anchors, num_classes)
+        boxes = decode_netout(netout, anchors, num_classes)
         image_bgr = draw_boxes(image_bgr, boxes, labels)
         cv.imwrite('images/{}_out.png'.format(i), image_bgr)
 
