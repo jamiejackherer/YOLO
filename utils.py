@@ -61,7 +61,7 @@ def load_weights(model, weight_file):
     weight_reader = WeightReader(weight_file)
 
     weight_reader.reset()
-    nb_conv = 23
+    nb_conv = 22
 
     for i in range(1, nb_conv + 1):
         conv_layer = model.get_layer('conv_' + str(i))
