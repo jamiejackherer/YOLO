@@ -81,14 +81,14 @@ def yolo_loss(y_true, y_pred):
     # [None, 13, 13, 5, 1]
     coord_mask = K.expand_dims(y_true[..., 0], axis=-1) * lambda_coord
     # [None, 13, 13]
-    best_ious = tf.reduce_max(iou_scores, axis=-1)
+    best_ious = tf.reduce_max(iou_scores, axis=4)
 
     """
         confidence mask: penelize predictors + penalize boxes with low IOU
         penalize the confidence of the boxes, which have IOU with some ground truth box < 0.6
     """
     # [None, 13, 13]
-    conf_mask = tf.to_float(best_ious < 0.6) * (1 - y_true[..., 0]) * lambda_noobj
+    conf_mask = conf_mask + tf.to_float(best_ious < 0.6) * (1 - y_true[..., 0]) * lambda_noobj
     # penalize the confidence of the boxes, which are responsible for corresponding ground truth box
     conf_mask = conf_mask + y_true[..., 0] * lambda_obj
     # [None, 13, 13, 5]
