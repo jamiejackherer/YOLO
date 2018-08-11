@@ -46,8 +46,8 @@ def yolo_loss(y_true, y_pred):
 
     union_areas = pred_areas + true_areas - intersect_areas
     iou_scores = tf.truediv(intersect_areas, union_areas + 1e-6)
-    iou_scores = K.expand_dims(iou_scores, axis=-1)
 
+    # [None, 13, 13, 5]
     box_conf = iou_scores * box_conf
     # [None, 13, 13, 5, 80]
     box_class = tf.argmax(y_true[..., 5:], -1)
