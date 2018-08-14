@@ -4,12 +4,13 @@ from keras.layers.merge import concatenate
 from keras.models import Model
 
 from config import image_size, num_classes, num_box, grid_h, grid_w
-from utils import space_to_depth_x2, load_weights
+from utils import space_to_depth_x2, load_weights, ensure_folder
 
 
 def ensure_yolo_weights():
     import os
     if not os.path.isfile('models/yolo.weights'):
+        ensure_folder('models')
         import urllib.request
         urllib.request.urlretrieve("https://pjreddie.com/media/files/yolo.weights", filename="models/yolo.weights")
 
