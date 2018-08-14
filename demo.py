@@ -12,8 +12,8 @@ from utils import ensure_folder, decode_netout, draw_boxes
 
 if __name__ == '__main__':
     model = build_model()
-    model_weights_path = os.path.join('models', best_model)
-    model.load_weights(model_weights_path)
+    # model_weights_path = os.path.join('models', best_model)
+    # model.load_weights(model_weights_path)
 
     test_path = valid_image_folder
     test_images = [f for f in os.listdir(test_path) if
