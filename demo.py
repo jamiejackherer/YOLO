@@ -8,12 +8,11 @@ import numpy as np
 
 from config import image_size, valid_image_folder, best_model, labels, anchors, num_classes
 from model import build_model
-from utils import ensure_folder, decode_netout, draw_boxes
+from utils import ensure_folder, decode_netout, draw_boxes, get_best_model
 
 if __name__ == '__main__':
     model = build_model()
-    # model_weights_path = os.path.join('models', best_model)
-    # model.load_weights(model_weights_path)
+    model.load_weights(get_best_model())
 
     test_path = valid_image_folder
     test_images = [f for f in os.listdir(test_path) if
