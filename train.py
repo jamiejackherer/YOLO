@@ -8,7 +8,7 @@ from keras.utils import multi_gpu_model
 from config import patience, num_epochs, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
-from utils import get_example_numbers, get_available_gpus, ensure_folder, get_smallest_loss
+from utils import get_example_numbers, get_available_gpus, ensure_folder, get_smallest_loss, get_best_model
 from yolo_utils import yolo_loss
 
 if __name__ == '__main__':
@@ -18,6 +18,8 @@ if __name__ == '__main__':
     args = vars(ap.parse_args())
     pretrained_path = args["pretrained"]
     checkpoint_models_path = 'models/'
+    if pretrained_path is None:
+        pretrained_path = get_best_model()
 
     # Callbacks
     tensor_board = keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=0, write_graph=True, write_images=True)
