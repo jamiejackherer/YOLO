@@ -10,8 +10,8 @@ from utils import space_to_depth_x2, load_weights
 def ensure_yolo_weights():
     import os
     if not os.path.isfile('models/yolo.weights'):
-        import urllib
-        urllib.urlretrieve("https://pjreddie.com/media/files/yolo.weights", filename="models/yolo.weights")
+        import urllib.request
+        urllib.request.urlretrieve("https://pjreddie.com/media/files/yolo.weights", filename="models/yolo.weights")
 
 
 def build_model():
