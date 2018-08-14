@@ -7,6 +7,13 @@ from config import image_size, num_classes, num_box, grid_h, grid_w
 from utils import space_to_depth_x2, load_weights
 
 
+def ensure_yolo_weights():
+    import os
+    if not os.path.isfile('models/yolo.weights'):
+        import urllib
+        urllib.urlretrieve("https://pjreddie.com/media/files/yolo.weights", filename="models/yolo.weights")
+
+
 def build_model():
     input_image = Input(shape=(image_size, image_size, 3))
     # Layer 1
@@ -110,6 +117,7 @@ def build_model():
     x = Conv2D(num_box * (4 + 1 + num_classes), (1, 1), strides=(1, 1), padding='same', name='conv_23')(x)
     output = Reshape((grid_h, grid_w, num_box, 4 + 1 + num_classes))(x)
     model = Model(input_image, output)
+    ensure_yolo_weights()
     load_weights(model, 'models/yolo.weights')
     return model
 
