@@ -8,7 +8,7 @@ from keras.utils import multi_gpu_model
 from config import patience, num_epochs, batch_size
 from data_generator import train_gen, valid_gen
 from model import build_model
-from utils import get_example_numbers, get_available_gpus, ensure_folder
+from utils import get_example_numbers, get_available_gpus, ensure_folder, get_smallest_loss
 from yolo_utils import yolo_loss
 
 if __name__ == '__main__':
@@ -34,7 +34,9 @@ if __name__ == '__main__':
 
         def on_epoch_end(self, epoch, logs=None):
             fmt = checkpoint_models_path + 'model.%02d-%.4f.hdf5'
-            self.model_to_save.save(fmt % (epoch, logs['val_loss']))
+            smallest_loss = get_smallest_loss()
+            if float(logs['val_loss']) < smallest_loss:
+                self.model_to_save.save(fmt % (epoch, logs['val_loss']))
 
 
     num_gpu = len(get_available_gpus())

@@ -207,6 +207,27 @@ def bbox_iou(box1, box2):
     return float(intersect) / union
 
 
+def get_smallest_loss():
+    import re
+    pattern = 'model.(?P<epoch>\d+)-(?P<val_loss>[0-9]*\.?[0-9]*).hdf5'
+    p = re.compile(pattern)
+    losses = [float(p.match(f).groups()[1]) for f in os.listdir('models/') if p.match(f)]
+    return np.min(losses)
+
+
+def get_best_model():
+    import re
+    pattern = 'model.(?P<epoch>\d+)-(?P<val_loss>[0-9]*\.?[0-9]*).hdf5'
+    p = re.compile(pattern)
+    files = [f for f in os.listdir('models/') if p.match(f)]
+    filename = None
+    if len(files) > 0:
+        losses = [float(p.match(f).groups()[1]) for f in files]
+        best_index = int(np.argmin(losses))
+        filename = os.path.join('models', files[best_index])
+    return filename
+
+
 def _interval_overlap(interval_a, interval_b):
     x1, x2 = interval_a
     x3, x4 = interval_b
