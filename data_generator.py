@@ -4,7 +4,7 @@ import cv2 as cv
 import numpy as np
 from keras.utils import Sequence
 from pycocotools.coco import COCO
-
+from augmentor import aug_pipe
 from config import batch_size, image_h, image_w, grid_h, grid_w, num_classes, num_channels, num_box, grid_size, \
     train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx, anchors
 from utils import BoundBox, bbox_iou
@@ -95,6 +95,7 @@ class DataGenSequence(Sequence):
             image_bgr = cv.imread(filename)
             image_bgr = cv.resize(image_bgr, (image_h, image_w))
             image_rgb = image_bgr[:, :, ::-1]
+            image_rgb = aug_pipe.augment_image(image_rgb)
 
             batch_x[i_batch, :, :] = image_rgb / 255.
             batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
