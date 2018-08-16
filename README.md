@@ -19,9 +19,6 @@ $ wget http://images.cocodataset.org/zips/train2017.zip && wget http://images.co
 
 ![image](https://github.com/foamliu/YOLO/raw/master/images/COCO_2017.png)
 
-## 预训练模型
-下载[权重文件](https://pjreddie.com/media/files/yolo.weights)，置入models目录。
-
 ## 用法
 
 ### 数据预处理
