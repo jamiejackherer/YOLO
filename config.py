@@ -9,7 +9,7 @@ epsilon = 1e-6
 
 score_threshold = 0.3  # real value, if [ highest class probability score < threshold], then get rid of the corresponding box
 iou_threshold = 0.3  # real value, "intersection over union" threshold used for NMS filtering
-anchors = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]
+anchors = [0.53,0.80, 1.71,2.36, 2.90,6.45, 6.34,3.79, 9.03,9.74]
 
 
 labels = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
