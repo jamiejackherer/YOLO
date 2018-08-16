@@ -53,10 +53,12 @@ def draw_boxes(image, boxes, labels):
         xmax = int(box.xmax * image_w)
         ymax = int(box.ymax * image_h)
 
-        s = labels[box.get_label()] + ' ' + str(box.get_score())
+        y_offset = 15
+        s = labels[box.get_label()] + ' {0:.4f}'.format(box.get_score())
         cv.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 2)
-        cv.putText(image, s, (xmin + 1, ymin + 1), cv.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness=2, lineType=cv.LINE_AA)
-        cv.putText(image, s, (xmin, ymin), cv.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv.LINE_AA)
+        cv.putText(image, s, (xmin + 1, ymin + 1 + y_offset), cv.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness=2,
+                   lineType=cv.LINE_AA)
+        cv.putText(image, s, (xmin, ymin + y_offset), cv.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv.LINE_AA)
     return image
 
 
