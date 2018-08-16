@@ -111,8 +111,8 @@ if __name__ == '__main__':
             xmin, ymin, width, height = anno['bbox']
 
             relative_w = width / cell_w
-            relatice_h = height / cell_h
-            annotation_dims.append(tuple(map(float, (relative_w, relatice_h))))
+            relative_h = height / cell_h
+            annotation_dims.append(tuple(map(float, (relative_w, relative_h))))
 
     annotation_dims = np.array(annotation_dims)
     centroids = run_kmeans(annotation_dims, num_anchors)
