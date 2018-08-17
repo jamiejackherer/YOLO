@@ -19,19 +19,19 @@ def get_ground_truth(coco, imgId):
     annos = coco.loadAnns(ids=annIds)
     for anno in annos:
         category_id = anno['category_id']
-        xmin, ymin, width, height = anno['bbox']
-        xmin = 1.0 * xmin * image_w
-        ymin = 1.0 * ymin * image_h
-        width = 1.0 * width * image_w
-        height = 1.0 * height * image_h
-        center_x = xmin + width / 2.
+        bx, by, bw, bh = anno['bbox']
+        bx = 1.0 * bx * image_w
+        by = 1.0 * by * image_h
+        bw = 1.0 * bw * image_w
+        bh = 1.0 * bh * image_h
+        center_x = bx + bw / 2.
         center_x = center_x / grid_size
-        center_y = ymin + height / 2.
+        center_y = by + bh / 2.
         center_y = center_y / grid_size
         cell_x = int(np.floor(center_x))
         cell_y = int(np.floor(center_y))
-        center_w = width / grid_size
-        center_h = height / grid_size
+        center_w = bw / grid_size
+        center_h = bh / grid_size
         box = [center_x, center_y, center_w, center_h]
 
         # find the anchor that best predicts this box
@@ -90,15 +90,17 @@ class DataGenSequence(Sequence):
             img = self.coco.loadImgs(ids=[imgId])[0]
             file_name = img['file_name']
             filename = os.path.join(self.image_folder, file_name)
-            image_bgr = cv.imread(filename)
-            image_bgr = cv.resize(image_bgr, (image_h, image_w))
-            image_rgb = image_bgr[:, :, ::-1]
-            if self.usage == 'train':
-                image, boxes = aug_image(image, boxes, jitter=True)
-            else:
-                image, boxes = aug_image(image, boxes, jitter=False)
+            image = cv.imread(filename)
 
-            batch_x[i_batch, :, :] = image_rgb / 255.
+            annIds = self.coco.getAnnIds(imgIds=[imgId])
+            annos = self.coco.loadAnns(ids=annIds)
+            if self.usage == 'train':
+                image, boxes = aug_image(image, annos, jitter=True)
+            else:
+                image, boxes = aug_image(image, annos, jitter=False)
+
+            image = image[:, :, ::-1]
+            batch_x[i_batch, :, :] = image / 255.
             batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)
 
         return batch_x, batch_y
