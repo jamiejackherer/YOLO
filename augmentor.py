@@ -145,7 +145,7 @@ def to_bboxes(annos):
     new_bboxes = []
     for anno in annos:
         x, y, w, h = anno['bbox']
-        bbox = BoundBox(x, y, x + w, y + h)
+        bbox = BoundBox(x, y, x + w, y + h, 1.0)
         new_bboxes.append(bbox)
     return new_bboxes
 
