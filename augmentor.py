@@ -6,7 +6,7 @@ import numpy as np
 from imgaug import augmenters as iaa
 from pycocotools.coco import COCO
 
-from config import image_h, image_w, train_image_folder, train_annot_file, labels
+from config import image_h, image_w, train_image_folder, train_annot_file, labels, num_classes, catId2idx
 from utils import draw_boxes
 
 ### augmentors by https://github.com/aleju/imgaug
@@ -144,8 +144,11 @@ def to_bboxes(annos):
     from utils import BoundBox
     new_bboxes = []
     for anno in annos:
+        category_id = anno['category_id']
+        classes = np.zeros((num_classes,), np.float32)
+        classes[catId2idx[category_id]] = 1.0
         x, y, w, h = anno['bbox']
-        bbox = BoundBox(x, y, x + w, y + h, 1.0)
+        bbox = BoundBox(x, y, x + w, y + h, 1.0, classes)
         new_bboxes.append(bbox)
     return new_bboxes
 
