@@ -6,7 +6,7 @@ import numpy as np
 from imgaug import augmenters as iaa
 from pycocotools.coco import COCO
 
-from config import image_h, image_w, train_image_folder, train_annot_file
+from config import image_h, image_w, train_image_folder, train_annot_file, labels
 from utils import draw_boxes
 
 ### augmentors by https://github.com/aleju/imgaug
@@ -169,5 +169,5 @@ if __name__ == '__main__':
         annos = coco.loadAnns(ids=annIds)
         image, annos = aug_image(image, annos, True)
         new_bboxes = to_bboxes(annos)
-        draw_boxes(image, new_bboxes)
+        draw_boxes(image, new_bboxes, labels)
         cv.imwrite('images/imgaug_after_{}.png'.format(i), image)
