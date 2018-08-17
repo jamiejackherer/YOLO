@@ -4,7 +4,8 @@ import cv2 as cv
 import numpy as np
 from keras.utils import Sequence
 from pycocotools.coco import COCO
-from augmentor import aug_pipe
+
+from augmentor import aug_image
 from config import batch_size, image_h, image_w, grid_h, grid_w, num_classes, num_channels, num_box, grid_size, \
     train_image_folder, valid_image_folder, train_annot_file, valid_annot_file, catId2idx, anchors
 from utils import BoundBox, bbox_iou
@@ -14,22 +15,19 @@ anchor_boxes = [BoundBox(0, 0, anchors[2 * i], anchors[2 * i + 1]) for i in rang
 
 def get_ground_truth(coco, imgId):
     gt = np.zeros((grid_h, grid_w, num_box, 4 + 1 + num_classes), dtype=np.float32)
-    original = coco.loadImgs(ids=[imgId])[0]
-    original_height = original['height']
-    original_width = original['width']
     annIds = coco.getAnnIds(imgIds=[imgId])
     annos = coco.loadAnns(ids=annIds)
     for anno in annos:
         category_id = anno['category_id']
         xmin, ymin, width, height = anno['bbox']
-        xmin = 1.0 * xmin * image_w / original_width
-        ymin = 1.0 * ymin * image_h / original_height
-        width = 1.0 * width * image_w / original_width
-        height = 1.0 * height * image_h / original_height
+        xmin = 1.0 * xmin * image_w
+        ymin = 1.0 * ymin * image_h
+        width = 1.0 * width * image_w
+        height = 1.0 * height * image_h
         center_x = xmin + width / 2.
-        center_x = center_x / float(image_w / grid_w)
+        center_x = center_x / grid_size
         center_y = ymin + height / 2.
-        center_y = center_y / float(image_h / grid_h)
+        center_y = center_y / grid_size
         cell_x = int(np.floor(center_x))
         cell_y = int(np.floor(center_y))
         center_w = width / grid_size
@@ -96,7 +94,9 @@ class DataGenSequence(Sequence):
             image_bgr = cv.resize(image_bgr, (image_h, image_w))
             image_rgb = image_bgr[:, :, ::-1]
             if self.usage == 'train':
-                image_rgb = aug_pipe.augment_image(image_rgb)
+                image, boxes = aug_image(image, boxes, jitter=True)
+            else:
+                image, boxes = aug_image(image, boxes, jitter=False)
 
             batch_x[i_batch, :, :] = image_rgb / 255.
             batch_y[i_batch, :, :] = get_ground_truth(self.coco, imgId)

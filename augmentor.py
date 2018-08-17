@@ -1,4 +1,13 @@
+import os
+import random
+
+import cv2 as cv
+import numpy as np
 from imgaug import augmenters as iaa
+from pycocotools.coco import COCO
+
+from config import image_h, image_w, train_image_folder, train_annot_file
+from utils import draw_boxes
 
 ### augmentors by https://github.com/aleju/imgaug
 sometimes = lambda aug: iaa.Sometimes(0.5, aug)
@@ -28,9 +37,9 @@ aug_pipe = iaa.Sequential(
                    [
                        # sometimes(iaa.Superpixels(p_replace=(0, 1.0), n_segments=(20, 200))), # convert images into their superpixel representation
                        iaa.OneOf([
-                           iaa.GaussianBlur((0, 3.0)),  # blur images with a sigma between 0 and 3.0
-                           iaa.AverageBlur(k=(2, 7)),  # blur image using local means with kernel sizes between 2 and 7
-                           iaa.MedianBlur(k=(3, 11)),
+                           iaa.GaussianBlur((0, 0.5)),  # blur images with a sigma between 0 and 3.0
+                           iaa.AverageBlur(k=(2, 3)),  # blur image using local means with kernel sizes between 2 and 3
+                           iaa.MedianBlur(k=(3, 5)),
                            # blur image using local medians with kernel sizes between 2 and 7
                        ]),
                        iaa.Sharpen(alpha=(0, 1.0), lightness=(0.75, 1.5)),  # sharpen images
@@ -61,3 +70,104 @@ aug_pipe = iaa.Sequential(
     ],
     random_order=True
 )
+
+
+def aug_image(image, annos, jitter):
+    orig_h, orig_w = image.shape[:2]
+
+    if jitter:
+        ### scale the image
+        scale = np.random.uniform() / 10. + 1.
+        image = cv.resize(image, (0, 0), fx=scale, fy=scale)
+
+        ### translate the image
+        max_offx = (scale - 1.) * orig_w
+        max_offy = (scale - 1.) * orig_h
+        offx = int(np.random.uniform() * max_offx)
+        offy = int(np.random.uniform() * max_offy)
+
+        image = image[offy: (offy + orig_h), offx: (offx + orig_w)]
+
+        ### flip the image
+        flip = np.random.binomial(1, .5)
+        if flip > 0.5: image = cv.flip(image, 1)
+
+        image = aug_pipe.augment_image(image)
+
+        # resize the image to standard size
+        image = cv.resize(image, (image_w, image_h))
+
+        # fix object's position and size
+        for anno in annos:
+            bx, by, bw, bh = anno['bbox']
+
+            bx = int(bx * scale - offx)
+            bw = int(bw * scale)
+
+            bx = int(bx * float(image_w) / orig_w)
+            bx = max(min(bx, image_w), 0)
+            bw = int(bw * float(image_w) / orig_w)
+            bw = max(min(bw, image_w), 0)
+
+            by = int(by * scale - offy)
+            bh = int(bh * scale)
+
+            by = int(by * float(image_h) / orig_h)
+            by = max(min(by, image_h), 0)
+            bh = int(bh * float(image_h) / orig_h)
+            bh = max(min(bh, image_h), 0)
+
+            bx = bx / image_w
+            bw = bw / image_w
+            by = by / image_h
+            bh = bh / image_h
+
+            if flip > 0.5:
+                bx = 1.0 - (bx + bw)
+
+            anno['bbox'] = (bx, by, bw, bh)
+    else:
+        # resize the image to standard size
+        image = cv.resize(image, (image_w, image_h))
+        for anno in annos:
+            bx, by, bw, bh = anno['bbox']
+            bx = bx / orig_w
+            bw = bw / orig_w
+            by = by / orig_h
+            bh = bh / orig_h
+            anno['bbox'] = (bx, by, bw, bh)
+
+    return image, annos
+
+
+def to_bboxes(annos):
+    from utils import BoundBox
+    new_bboxes = []
+    for anno in annos:
+        x, y, w, h = anno['bbox']
+        bbox = BoundBox(x, y, x + w, y + h)
+        new_bboxes.append(bbox)
+    return new_bboxes
+
+
+if __name__ == '__main__':
+    coco = COCO(train_annot_file)
+    imgIds = coco.getImgIds()
+    samples = random.sample(imgIds, 10)
+
+    for i, imgId in enumerate(samples):
+        img = coco.loadImgs(ids=[imgId])[0]
+        file_name = img['file_name']
+        filename = os.path.join(train_image_folder, file_name)
+        image_bgr = cv.imread(filename)
+        print('processing {}'.format(filename))
+        image = cv.imread(filename)
+        image_resized = cv.resize(image, (image_h, image_w))
+        cv.imwrite('images/imgaug_before_{}.png'.format(i), image_resized)
+
+        annIds = coco.getAnnIds(imgIds=[imgId])
+        annos = coco.loadAnns(ids=annIds)
+        image, annos = aug_image(image, annos, True)
+        new_bboxes = to_bboxes(annos)
+        draw_boxes(image, new_bboxes)
+        cv.imwrite('images/imgaug_after_{}.png'.format(i), image)
