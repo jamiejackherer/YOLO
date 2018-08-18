@@ -2,7 +2,7 @@ import pylab
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from config import train_annot_file
+from config import valid_annot_file
 
 pylab.rcParams['figure.figsize'] = (10.0, 8.0)
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     print('Running demo for *%s* results.' % (annType))
 
     # initialize COCO ground truth api
-    cocoGt = COCO(train_annot_file)
+    cocoGt = COCO(valid_annot_file)
 
     # initialize COCO detections api
     cocoDt = cocoGt.loadRes('data/eval_results.json')
