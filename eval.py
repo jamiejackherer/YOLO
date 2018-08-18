@@ -20,8 +20,6 @@ if __name__ == '__main__':
     cocoDt = cocoGt.loadRes('data/eval_results.json')
 
     imgIds = sorted(cocoGt.getImgIds())
-    imgIds = imgIds[0:100]
-    imgId = imgIds[np.random.randint(100)]
 
     # running evaluation
     cocoEval = COCOeval(cocoGt, cocoDt, annType)

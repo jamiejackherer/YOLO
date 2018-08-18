@@ -22,7 +22,7 @@ $ wget http://images.cocodataset.org/zips/train2017.zip && wget http://images.co
 ## 用法
 
 ### 数据预处理
-提取123,287个训练图像，并将它们分开（53,879个用于训练，7,120个用于验证）：
+提取123,287个训练图像，并将它们分开（118,287个用于训练，5,000个用于验证）：
 ```bash
 $ python pre-process.py
 ```
