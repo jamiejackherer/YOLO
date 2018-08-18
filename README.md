@@ -43,6 +43,9 @@ $ tensorboard --logdir path_to_current_dir/logs
 $ python eval_gen_results.py
 $ python eval.py
 ```
+
+mAP = 30.3
+
 KPI|value|
 |---|---|
  Average Precision  (AP)| @[ IoU=0.50:0.95 + area=   all + maxDets=100 ] = 0.120|
