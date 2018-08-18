@@ -27,7 +27,6 @@ if __name__ == '__main__':
         file_name = img['file_name']
         filename = os.path.join(valid_image_folder, file_name)
         image = cv.imread(filename)
-        print('Start processing image: {}'.format(filename))
         image_bgr = cv.imread(filename)
         orig_h, orig_w = image_bgr.shape[:2]
         image_bgr = cv.resize(image_bgr, (image_size, image_size))
@@ -37,14 +36,14 @@ if __name__ == '__main__':
         netout = model.predict(image_input)[0]
         boxes = decode_netout(netout, anchors, num_classes)
         for box in boxes:
-            x = box.xmin * orig_w
-            y = box.ymin * orig_h
-            w = (box.xmax - box.xmin) * orig_w
-            h = (box.ymax - box.ymin) * orig_h
-            results.append({'image_id': imgId, 'category_id': catIds[box.get_label()], 'bbox': [x, y, w, h],
-                            'score': box.get_score()})
+            x = round(box.xmin * orig_w, 1)
+            y = round(box.ymin * orig_h, 1)
+            w = round((box.xmax - box.xmin) * orig_w, 1)
+            h = round((box.ymax - box.ymin) * orig_h, 1)
+        results.append({'image_id': imgId, 'category_id': catIds[box.get_label()], 'bbox': [x, y, w, h],
+                        'score': box.get_score()})
 
-        with open('data/eval_results.json', 'w') as file:
-            json.dump(results, file)
+    with open('data/eval_results.json', 'w') as file:
+        json.dump(results, file)
 
     K.clear_session()
