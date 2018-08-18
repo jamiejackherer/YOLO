@@ -43,7 +43,7 @@ if __name__ == '__main__':
             results.append({'image_id': imgId, 'category_id': catIds[box.get_label()], 'bbox': [x, y, w, h],
                             'score': float(box.get_score())})
 
-        with open('data/eval_results.json', 'w') as file:
-            json.dump(results, file)
+    with open('data/eval_results.json', 'w') as file:
+        json.dump(results, file)
 
     K.clear_session()
