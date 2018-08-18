@@ -1,8 +1,7 @@
-from pycocotools.coco import COCO
 import pylab
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
-import numpy as np
+
 from config import train_annot_file
 
 pylab.rcParams['figure.figsize'] = (10.0, 8.0)
