@@ -41,7 +41,7 @@ if __name__ == '__main__':
             w = round((box.xmax - box.xmin) * orig_w, 1)
             h = round((box.ymax - box.ymin) * orig_h, 1)
             results.append({'image_id': imgId, 'category_id': catIds[box.get_label()], 'bbox': [x, y, w, h],
-                            'score': float(box.get_score())})
+                            'score': round(float(box.get_score()), 5)})
 
     with open('data/eval_results.json', 'w') as file:
         json.dump(results, file)
